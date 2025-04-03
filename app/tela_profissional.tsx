@@ -10,7 +10,8 @@ const ProfissionalHomeScreen = () => {
     <View style={styles.container}>
       <Text style={styles.titulo}>Área do Profissional</Text>
       <View style={styles.grid}>
-        <TouchableOpacity style={styles.card} >
+        <TouchableOpacity onPress={() => navigation.navigate('pacientes') }
+        style={styles.card} >
           <FontAwesome5 name="user-md" size={30} color="#fff" />
           <Text style={styles.cardText}>Meus Pacientes</Text>
         </TouchableOpacity>

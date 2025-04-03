@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-
+import { useNavigation } from "@react-navigation/native"; 
 
 type RootStackParamList = {
   "Meus Pagamentos": undefined;
@@ -20,12 +20,14 @@ const pagamentos = [
   { id: "3", data: "10/04/2025", valor: "R$ 150,00", status: "Pendente" },
 ];
 
-const TelaMeusPagamentos: React.FC<Props> = ({ navigation }) => {
+const TelaMeusPagamentos: React.FC<Props> = ({  }) => {
+ 
+  const navigation = useNavigation();
   return (
     <View style={styles.container}>
      
       <View style={styles.header}>
-        <TouchableOpacity >
+        <TouchableOpacity onPress={() => navigation.navigate('tela_paciente') } >
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
         </TouchableOpacity>
         <Text style={styles.titulo}>Meus Pagamentos</Text>

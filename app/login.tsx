@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { useNavigation } from "@react-navigation/native"; 
 
 const TelaLogin = () => {
+ const navigation = useNavigation();
   return (
     <View style={styles.container}>
       <Image source={require('./assets/img/icone.png')} style={styles.logo} />
@@ -12,15 +14,17 @@ const TelaLogin = () => {
       <TextInput style={styles.input} placeholder="CPF" keyboardType="numeric" />
       <TextInput style={styles.input} placeholder="Senha" secureTextEntry />
 
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('redefinir') }> 
         <Text style={styles.linkSenha}>Esqueci minha senha!</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.btEntrar}>
+      <TouchableOpacity onPress={() => navigation.navigate('tela_paciente') } 
+      
+      style={styles.btEntrar}>
         <Text style={styles.btTexto}>Entrar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate('inicio') }> 
         <Text style={styles.voltar}>Voltar</Text>
       </TouchableOpacity>
     </View>

@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions } from
 import { Ionicons } from '@expo/vector-icons';
 import { LineChart } from 'react-native-chart-kit';
 import { StackNavigationProp } from '@react-navigation/stack';
-
+import { useNavigation } from "@react-navigation/native"; 
 
 type RootStackParamList = {
   "Minha Evolução": undefined;
@@ -14,7 +14,8 @@ interface Props {
   navigation: TelaMinhaEvolucaoNavigationProp;
 }
 
-const MinhaEvolucaoScreen: React.FC<Props> = ({ navigation }) => {
+const TelaMinhaEvolucao: React.FC<Props> = ({ }) => {
+  const navigation = useNavigation();
 
   const progresso = [20, 40, 50, 60, 80, 90, 100];
 
@@ -22,7 +23,11 @@ const MinhaEvolucaoScreen: React.FC<Props> = ({ navigation }) => {
     <View style={styles.container}>
       
       <View style={styles.header}>
-        <TouchableOpacity >
+
+        <TouchableOpacity 
+        
+        onPress={() => navigation.navigate('tela_paciente') } >
+                  
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
         </TouchableOpacity>
         <Text style={styles.titulo}>Minha Evolução</Text>
@@ -121,4 +126,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MinhaEvolucaoScreen;
+export default TelaMinhaEvolucao;

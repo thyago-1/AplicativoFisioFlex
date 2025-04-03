@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
+import { useNavigation } from "@react-navigation/native";
 
 type RootStackParamList = {
   Publicidade: undefined;
@@ -34,12 +35,18 @@ const publicidades = [
   },
 ];
 
-const TelaPublicidade: React.FC<Props> = ({ navigation }) => {
+const TelaPublicidade: React.FC<Props> = ({  }) => {
+  
+    const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
      
       <View style={styles.header}>
-        <TouchableOpacity >
+        <TouchableOpacity 
+        
+        onPress={() => navigation.navigate('tela_paciente') } >
+
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
         </TouchableOpacity>
         <Text style={styles.titulo}>Publicidade</Text>
