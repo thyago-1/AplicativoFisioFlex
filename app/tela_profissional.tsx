@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 
-const ProfissionalHomeScreen = () => {
+const TelaProfissional = () => {
   const navigation = useNavigation();
 
   return (
@@ -16,27 +16,31 @@ const ProfissionalHomeScreen = () => {
           <Text style={styles.cardText}>Meus Pacientes</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} >
+        <TouchableOpacity onPress={() => navigation.navigate('consultas_profissional') } 
+        style={styles.card} >
           <MaterialIcons name="event" size={30} color="#fff" />
           <Text style={styles.cardText}>Consultas</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} >
+        <TouchableOpacity onPress={() => navigation.navigate('prescricoes') }
+        style={styles.card} >
           <MaterialIcons name="assignment" size={30} color="#fff" />
           <Text style={styles.cardText}>Prescrições</Text>
         </TouchableOpacity>
        
-        <TouchableOpacity style={styles.card} >
+        <TouchableOpacity onPress={() => navigation.navigate('gerenciar') } style={styles.card} >
           <MaterialIcons name="dashboard" size={30} color="#fff" />
           <Text style={styles.cardText}>Gerenciar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} >
+        <TouchableOpacity onPress={() => navigation.navigate('simetografo') }
+        style={styles.card} >
           <MaterialIcons name="camera" size={30} color="#fff" />
           <Text style={styles.cardText}>Simetógrafo</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} >
+        <TouchableOpacity onPress={() => navigation.navigate('financas') }
+        style={styles.card} >
           <MaterialIcons name="payments" size={30} color="#fff" />
           <Text style={styles.cardText}>Finanças</Text>
         </TouchableOpacity>
@@ -100,4 +104,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfissionalHomeScreen;
+export default TelaProfissional;

@@ -4,13 +4,21 @@ import { NavigationContainer } from '@react-navigation/native';
 import MeusPacientesScreen from './pacientes';
 import DetalhesPacienteScreen from './detalhes_paciente';
 import EditarPacienteScreen from './editar_paciente';
+import EditarConsulta from './editar_consulta';
 
-const Stack = createStackNavigator();
-<Stack.Screen 
-  name="detalhes_paciente" 
-  component={DetalhesPacienteScreen} 
-  initialParams={{ paciente: null }} // Valor padrão opcional
-/>
+
+
+
+// Definição dos tipos das rotas
+type RootStackParamList = {
+  meus_pacientes: undefined;
+  detalhes_paciente: { paciente: any };
+  editar_paciente: undefined;
+  editar_consulta: { consulta: { id: string; paciente: string; data: string; hora: string } };
+};
+
+const Stack = createStackNavigator<RootStackParamList>();
+
 export default function App() {
   return (
     <NavigationContainer>
@@ -18,6 +26,7 @@ export default function App() {
         <Stack.Screen name="meus_pacientes" component={MeusPacientesScreen} />
         <Stack.Screen name="detalhes_paciente" component={DetalhesPacienteScreen} />
         <Stack.Screen name="editar_paciente" component={EditarPacienteScreen} />
+        <Stack.Screen name="editar_consulta" component={EditarConsulta} />
       </Stack.Navigator>
     </NavigationContainer>
   );
