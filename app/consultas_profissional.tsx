@@ -1,16 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const TelaConsultas = () => {
-  const navigation = useNavigation();
-  const [consultas, setConsultas] = useState([
-    { id: '1', paciente: 'Maria Souza', data: '10/04/2025', hora: '14:00' },
-    { id: '2', paciente: 'Carlos Oliveira', data: '12/04/2025', hora: '16:30' },
-  ]);
+interface Consulta {
+  id: number;
+  paciente: string;
+  data: string; // formato "YYYY-MM-DD"
+  hora: string; // formato "HH:mm:ss"
+}
 
-  const cancelarConsulta = (id) => {
-    setConsultas(consultas.filter(consulta => consulta.id !== id));
+const TelaConsultas = () => {
+  const navigation = useNavigation<any>();
+  const [consultas, setConsultas] = useState<Consulta[]>([]);
+
+  useEffect(() => {
+    fetch('http://10.0.2.2:8080/consultas') // altere se for IP local
+      .then(response => response.json())
+      .then(data => setConsultas(data))
+      .catch(error => {
+        console.error(error);
+        Alert.alert('Erro', 'Não foi possível carregar as consultas.');
+      });
+  }, []);
+
+  const cancelarConsulta = (id: number) => {
+    Alert.alert('Confirmar', 'Deseja cancelar esta consulta?', [
+      {
+        text: 'Cancelar',
+        style: 'cancel',
+      },
+      {
+        text: 'Sim',
+        onPress: () => {
+          // Aqui você pode chamar DELETE /consultas/{id} futuramente
+          setConsultas(consultas.filter(consulta => consulta.id !== id));
+          Alert.alert('Consulta cancelada!');
+        },
+      },
+    ]);
   };
 
   return (
@@ -18,15 +45,17 @@ const TelaConsultas = () => {
       <Text style={styles.titulo}>Consultas Agendadas</Text>
       <FlatList
         data={consultas}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.consultaCard}>
             <Text style={styles.info}><Text style={styles.label}>Paciente:</Text> {item.paciente}</Text>
             <Text style={styles.info}><Text style={styles.label}>Data:</Text> {item.data}</Text>
             <Text style={styles.info}><Text style={styles.label}>Hora:</Text> {item.hora}</Text>
             <View style={styles.botoesContainer}>
-              <TouchableOpacity onPress={() => navigation.navigate('editar_consulta', { consulta: item })} 
-              style={styles.botaoEditar}>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('editar_consulta', { consulta: item })}
+                style={styles.botaoEditar}
+              >
                 <Text style={styles.textoBotao}>Editar</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.botaoCancelar} onPress={() => cancelarConsulta(item.id)}>
@@ -36,18 +65,16 @@ const TelaConsultas = () => {
           </View>
         )}
       />
-      <TouchableOpacity onPress={() => navigation.navigate('adicionar_consulta')} 
-      style={styles.botaoAdicionar}>
+      <TouchableOpacity onPress={() => navigation.navigate('adicionar_consulta')} style={styles.botaoAdicionar}>
         <Text style={styles.textoBotao}>Adicionar Consulta</Text>
       </TouchableOpacity>
-      
-      <TouchableOpacity onPress={() => navigation.navigate('tela_profissional')}
-      style={styles.botaoVoltar} >
+      <TouchableOpacity onPress={() => navigation.navigate('tela_profissional')} style={styles.botaoVoltar}>
         <Text style={styles.textoBotaoVoltar}>Voltar</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

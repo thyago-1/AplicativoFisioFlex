@@ -1,62 +1,80 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation } from "@react-navigation/native"; 
+import { useNavigation } from "@react-navigation/native";
 
-type RootStackParamList = {
-  "Meus Pagamentos": undefined;
-};
-type TelaMeusPagamentosNavigationProp = StackNavigationProp<RootStackParamList, "Meus Pagamentos">;
-
-interface Props {
-  navigation: TelaMeusPagamentosNavigationProp;
+interface Pagamento {
+  id: string;
+  data: string;
+  valor: number;
+  status: string;
 }
 
+const TelaMeusPagamentos: React.FC = () => {
+  const navigation = useNavigation<any>();
+  const [pagamentos, setPagamentos] = useState<Pagamento[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const pagamentos = [
-  { id: "1", data: "10/02/2025", valor: "R$ 150,00", status: "Pago" },
-  { id: "2", data: "10/03/2025", valor: "R$ 150,00", status: "Pendente" },
-  { id: "3", data: "10/04/2025", valor: "R$ 150,00", status: "Pendente" },
-];
+  const idPaciente = 1; // 👈 Substitua com ID real do paciente logado
+  const API_URL = `http://10.0.2.2:8080/pagamentos/${idPaciente}`;
 
-const TelaMeusPagamentos: React.FC<Props> = ({  }) => {
- 
-  const navigation = useNavigation();
+  useEffect(() => {
+    const buscarPagamentos = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        setPagamentos(data);
+      } catch (error) {
+        console.error(error);
+        Alert.alert("Erro", "Erro ao carregar pagamentos.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    buscarPagamentos();
+  }, []);
+
+  const renderItem = ({ item }: { item: Pagamento }) => (
+    <View style={styles.card}>
+      <Text style={styles.subtitulo}>{new Date(item.data).toLocaleDateString()}</Text>
+      <Text style={styles.valor}>R$ {item.valor.toFixed(2)}</Text>
+      <Text style={[styles.status, item.status === "Pendente" ? styles.pendente : styles.pago]}>
+        {item.status}
+      </Text>
+
+      {item.status === "Pendente" && (
+        <TouchableOpacity style={styles.botao}>
+          <Text style={styles.botaoTexto}>Pagar Agora</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
   return (
     <View style={styles.container}>
-     
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('tela_paciente') } >
+        <TouchableOpacity onPress={() => navigation.navigate("tela_paciente")}>
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
         </TouchableOpacity>
         <Text style={styles.titulo}>Meus Pagamentos</Text>
         <View style={{ width: 24 }} />
       </View>
 
-      
-      <FlatList
-        data={pagamentos}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.subtitulo}>{item.data}</Text>
-            <Text style={styles.valor}>{item.valor}</Text>
-            <Text style={[styles.status, item.status === "Pendente" ? styles.pendente : styles.pago]}>
-              {item.status}
-            </Text>
-
-            {item.status === "Pendente" && (
-              <TouchableOpacity style={styles.botao}>
-                <Text style={styles.botaoTexto}>Pagar Agora</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#1A335C" />
+      ) : (
+        <FlatList
+          data={pagamentos}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderItem}
+        />
+      )}
     </View>
   );
 };
+
+export default TelaMeusPagamentos;
 
 const styles = StyleSheet.create({
   container: {
@@ -122,5 +140,3 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
-
-export default TelaMeusPagamentos;

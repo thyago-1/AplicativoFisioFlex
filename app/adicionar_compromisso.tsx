@@ -1,43 +1,78 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { ArrowLeft, CalendarDays, Clock, UserRound } from 'lucide-react-native';
+import { CalendarDays, Clock, UserRound } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
 
+interface Paciente {
+  id: number;
+  nome: string;
+}
+
 const AdicionarCompromissoScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [data, setData] = useState(new Date());
   const [hora, setHora] = useState(new Date());
   const [mostrarData, setMostrarData] = useState(false);
   const [mostrarHora, setMostrarHora] = useState(false);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState('');
+  const [pacienteSelecionado, setPacienteSelecionado] = useState<number | null>(null);
+  const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [loadingPacientes, setLoadingPacientes] = useState(true);
 
-  // Simulando pacientes
-  const pacientes = [
-    { id: '1', nome: 'Maria Souza' },
-    { id: '2', nome: 'Carlos Oliveira' },
-    { id: '3', nome: 'Fernanda Lima' },
-  ];
+  useEffect(() => {
+    fetch('http://10.0.2.2:8080/pacientes')
+      .then(res => res.json())
+      .then(data => setPacientes(data))
+      .catch(err => {
+        console.error(err);
+        Alert.alert('Erro', 'Erro ao buscar pacientes.');
+      })
+      .finally(() => setLoadingPacientes(false));
+  }, []);
 
-  const salvarCompromisso = () => {
+  const salvarCompromisso = async () => {
     if (!titulo || !descricao || !pacienteSelecionado) {
-      alert('Preencha todos os campos e selecione um paciente!');
+      Alert.alert('Erro', 'Preencha todos os campos e selecione um paciente!');
       return;
     }
 
     const compromisso = {
-      titulo,
-      descricao,
-      data,
-      hora,
-      paciente: pacienteSelecionado,
+      pacienteId: pacienteSelecionado,
+      data: data.toISOString().split('T')[0],
+      hora: hora.toTimeString().split(' ')[0],
     };
 
-    console.log('Compromisso salvo:', compromisso);
-    navigation.goBack();
+    try {
+      const response = await fetch('http://10.0.2.2:8080/consultas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(compromisso),
+      });
+
+      if (response.ok) {
+        Alert.alert('Sucesso', 'Consulta agendada com sucesso!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Erro', 'Erro ao salvar compromisso.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Erro de conexão com o servidor.');
+    }
   };
 
   return (
@@ -47,7 +82,7 @@ const AdicionarCompromissoScreen = () => {
       <Text style={styles.label}>Título</Text>
       <TextInput
         style={styles.input}
-        placeholder="Ex: Reunião, Atendimento..."
+        placeholder="Ex: Atendimento, Avaliação..."
         value={titulo}
         onChangeText={setTitulo}
       />
@@ -62,21 +97,29 @@ const AdicionarCompromissoScreen = () => {
       />
 
       <Text style={styles.label}>Paciente</Text>
-      <View style={styles.pickerContainer}>
-        <UserRound size={20} color="#1A335C" />
-        <Picker
-          selectedValue={pacienteSelecionado}
-          style={styles.picker}
-          onValueChange={(itemValue) => setPacienteSelecionado(itemValue)}>
-          <Picker.Item label="Selecione um paciente..." value="" />
-          {pacientes.map((paciente) => (
-            <Picker.Item key={paciente.id} label={paciente.nome} value={paciente.nome} />
-          ))}
-        </Picker>
-      </View>
+      {loadingPacientes ? (
+        <ActivityIndicator color="#1A335C" />
+      ) : (
+        <View style={styles.pickerContainer}>
+          <UserRound size={20} color="#1A335C" />
+          <Picker
+            selectedValue={pacienteSelecionado}
+            style={styles.picker}
+            onValueChange={(itemValue) => setPacienteSelecionado(itemValue)}
+          >
+            <Picker.Item label="Selecione um paciente..." value={null} />
+            {pacientes.map((p) => (
+              <Picker.Item key={p.id} label={p.nome} value={p.id} />
+            ))}
+          </Picker>
+        </View>
+      )}
 
       <Text style={styles.label}>Data</Text>
-      <TouchableOpacity style={styles.datePicker} onPress={() => setMostrarData(true)}>
+      <TouchableOpacity
+        style={styles.datePicker}
+        onPress={() => setMostrarData(true)}
+      >
         <CalendarDays size={20} color="#1A335C" />
         <Text style={styles.dateText}>{data.toLocaleDateString()}</Text>
       </TouchableOpacity>
@@ -93,9 +136,17 @@ const AdicionarCompromissoScreen = () => {
       )}
 
       <Text style={styles.label}>Hora</Text>
-      <TouchableOpacity style={styles.datePicker} onPress={() => setMostrarHora(true)}>
+      <TouchableOpacity
+        style={styles.datePicker}
+        onPress={() => setMostrarHora(true)}
+      >
         <Clock size={20} color="#1A335C" />
-        <Text style={styles.dateText}>{hora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+        <Text style={styles.dateText}>
+          {hora.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })}
+        </Text>
       </TouchableOpacity>
       {mostrarHora && (
         <DateTimePicker
@@ -114,7 +165,6 @@ const AdicionarCompromissoScreen = () => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.botaoVoltar} onPress={() => navigation.goBack()}>
-        
         <Text style={styles.textoBotao}>Voltar</Text>
       </TouchableOpacity>
     </View>
@@ -192,9 +242,6 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
   },
   textoBotao: {
     color: '#fff',

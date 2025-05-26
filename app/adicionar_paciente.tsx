@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '../contexts/AuthContext';
 
 const TelaAdicionarPaciente = () => {
-  const navigation = useNavigation();
-  
-  // Estados dos campos do paciente
+  const navigation = useNavigation<any>();
+  const { token } = useAuth();
+
   const [nome, setNome] = useState('');
   const [cpf, setCpf] = useState('');
   const [idade, setIdade] = useState('');
@@ -16,10 +17,11 @@ const TelaAdicionarPaciente = () => {
   const [endereco, setEndereco] = useState('');
   const [telefone, setTelefone] = useState('');
   const [email, setEmail] = useState('');
-  const [imagem, setImagem] = useState(null);
+  const [senha, setSenha] = useState('');
+  const [imagem, setImagem] = useState<string | null>(null);
 
   const selecionarImagem = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 4],
@@ -31,29 +33,47 @@ const TelaAdicionarPaciente = () => {
     }
   };
 
-  const salvarPaciente = () => {
-    if (!nome || !cpf || !idade || !peso || !altura || !sexo || !endereco || !telefone || !email) {
-      alert('Preencha todos os campos!');
+  const salvarPaciente = async () => {
+    if (!nome || !cpf || !idade || !peso || !altura || !sexo || !endereco || !telefone || !email || !senha) {
+      Alert.alert('Atenção', 'Preencha todos os campos!');
       return;
     }
 
     const novoPaciente = {
-      id: Date.now().toString(),
       nome,
+      email,
+      senha,
       cpf,
-      idade,
-      peso,
-      altura,
+      idade: parseInt(idade),
+      peso: parseFloat(peso),
+      altura: parseFloat(altura),
       sexo,
       endereco,
       telefone,
-      email,
-      imagem: imagem || require('./assets/img/icone.png'), 
     };
 
-    console.log(novoPaciente); // Simulação de salvamento (substituir depois)
+    try {
+      const response = await fetch('http://10.0.2.2:8080/pacientes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(novoPaciente)
+      });
 
-    navigation.goBack();
+      if (response.ok) {
+        Alert.alert('Sucesso', 'Paciente cadastrado!');
+        navigation.navigate('pacientes');
+      } else {
+        const erro = await response.text();
+        console.error('Erro:', erro);
+        Alert.alert('Erro', `Erro ao salvar paciente. Status: ${response.status}`);
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Erro ao conectar com o servidor.');
+    }
   };
 
   return (
@@ -61,7 +81,7 @@ const TelaAdicionarPaciente = () => {
       <Text style={styles.titulo}>Adicionar Paciente</Text>
 
       <TouchableOpacity onPress={selecionarImagem}>
-        <Image source={imagem ? { uri: imagem } : require('./assets/img/icone.png')} style={styles.avatar} />
+        <Image source={imagem ? { uri: imagem } : require('../assets/img/icone.png')} style={styles.avatar} />
       </TouchableOpacity>
 
       <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
@@ -73,17 +93,21 @@ const TelaAdicionarPaciente = () => {
       <TextInput style={styles.input} placeholder="Endereço" value={endereco} onChangeText={setEndereco} />
       <TextInput style={styles.input} placeholder="Telefone" value={telefone} onChangeText={setTelefone} keyboardType="phone-pad" />
       <TextInput style={styles.input} placeholder="E-mail" value={email} onChangeText={setEmail} keyboardType="email-address" />
+      <TextInput style={styles.input} placeholder="Senha" value={senha} onChangeText={setSenha} secureTextEntry />
 
       <TouchableOpacity style={styles.botaoSalvar} onPress={salvarPaciente}>
         <Text style={styles.textoBotao}>Salvar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.navigate('pacientes') }>
+     
+      <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.navigate('pacientes')}>
         <Text style={styles.textoBotao}>Cancelar</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+export default TelaAdicionarPaciente;
 
 const styles = StyleSheet.create({
   container: {
@@ -134,5 +158,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default TelaAdicionarPaciente;

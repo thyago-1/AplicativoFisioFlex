@@ -1,77 +1,89 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation } from "@react-navigation/native"; 
+import { useNavigation } from "@react-navigation/native";
 
-type RootStackParamList = {
-  "Meus Atendimentos": undefined;
-};
-type TelaMeusAtendimentosNavigationProp = StackNavigationProp<RootStackParamList, "Meus Atendimentos">;
-
-interface Props {
-  navigation: TelaMeusAtendimentosNavigationProp;
+interface Atendimento {
+  id: string;
+  data: string;
+  descricao: string;
 }
 
+const MeusAtendimentosScreen: React.FC = () => {
+  const navigation = useNavigation<any>();
+  const [atendimentos, setAtendimentos] = useState<Atendimento[]>([]);
+  const [loading, setLoading] = useState(true);
 
-const atendimentosPassados = [
-  { id: "1", data: "10/03/2025", descricao: "Sessão de fisioterapia geral" },
-  { id: "2", data: "15/03/2025", descricao: "Treino de equilíbrio" },
-  { id: "3", data: "24/06/2025", descricao: "Reabilitação pós-cirúrgica" }
-];
+  const idPaciente = 1; // ✅ Troque conforme sua lógica de login/AsyncStorage
+  const API_URL = `http://10.0.2.2:8080/atendimentos/${idPaciente}`;
 
-const atendimentosFuturos = [
-  { id: "4", data: "14/08/2025", descricao: "Fortalecimento muscular" },
-  { id: "5", data: "14/09/2025", descricao: "Alongamento guiado" }
-];
+  useEffect(() => {
+    const buscarAtendimentos = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        setAtendimentos(data);
+      } catch (error) {
+        console.error(error);
+        Alert.alert("Erro", "Não foi possível carregar os atendimentos.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-const MeusAtendimentosScreen: React.FC<Props> = ({  }) => {
- 
-    const navigation = useNavigation();
-    return (
+    buscarAtendimentos();
+  }, []);
+
+  const hoje = new Date();
+
+  const passados = atendimentos.filter((a) => new Date(a.data) < hoje);
+  const futuros = atendimentos.filter((a) => new Date(a.data) >= hoje);
+
+  const renderItem = ({ item }: { item: Atendimento }) => (
+    <View style={styles.atendimento}>
+      <Text style={styles.data}>{new Date(item.data).toLocaleDateString()}</Text>
+      <Text style={styles.descricao}>{item.descricao}</Text>
+    </View>
+  );
+
+  return (
     <View style={styles.container}>
-      
       <View style={styles.header}>
-        
-        <TouchableOpacity onPress={() => navigation.navigate('tela_paciente') } >
-
+        <TouchableOpacity onPress={() => navigation.navigate("tela_paciente")}>
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
         </TouchableOpacity>
         <Text style={styles.titulo}>Meus Atendimentos</Text>
-        <View style={{ width: 24 }} /> 
+        <View style={{ width: 24 }} />
       </View>
 
-      <View style={styles.card}>
-        <Text style={styles.subtitulo}>Atendimentos Passados</Text>
-        <FlatList
-          data={atendimentosPassados}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.atendimento}>
-              <Text style={styles.data}>{item.data}</Text>
-              <Text style={styles.descricao}>{item.descricao}</Text>
-            </View>
-          )}
-        />
-      </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#1A335C" />
+      ) : (
+        <>
+          <View style={styles.card}>
+            <Text style={styles.subtitulo}>Atendimentos Passados</Text>
+            <FlatList
+              data={passados}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderItem}
+            />
+          </View>
 
-      
-      <View style={styles.card}>
-        <Text style={styles.subtitulo}>Atendimentos Futuros</Text>
-        <FlatList
-          data={atendimentosFuturos}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <View style={styles.atendimento}>
-              <Text style={styles.data}>{item.data}</Text>
-              <Text style={styles.descricao}>{item.descricao}</Text>
-            </View>
-          )}
-        />
-      </View>
+          <View style={styles.card}>
+            <Text style={styles.subtitulo}>Atendimentos Futuros</Text>
+            <FlatList
+              data={futuros}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderItem}
+            />
+          </View>
+        </>
+      )}
     </View>
   );
 };
+
+export default MeusAtendimentosScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -120,5 +132,3 @@ const styles = StyleSheet.create({
     color: "#555",
   },
 });
-
-export default MeusAtendimentosScreen;

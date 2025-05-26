@@ -1,25 +1,76 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { useNavigation } from "@react-navigation/native"; 
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
 
+const TelaLoginProfissional = () => {
+  const navigation = useNavigation<any>();
+  const { login } = useAuth();
 
-const TelaLoginProfissional = ({  }) => {
-  
-  const navigation = useNavigation();
-    const [registro, setRegistro] = useState('');
+  const [registro, setRegistro] = useState('');
   const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    if (registro.trim() === '' || senha.trim() === '') {
+  const handleLogin = async () => {
+    if (!registro.trim() || !senha.trim()) {
       Alert.alert('Erro', 'Por favor, preencha todos os campos.');
       return;
     }
-    
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://10.0.2.2:8080/profissionais/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ registro, senha }),
+      });
+
+      const responseText = await response.text();
+      console.log('Status:', response.status);
+      console.log('Response:', responseText);
+
+      if (response.ok) {
+        const data = JSON.parse(responseText);
+        console.log('Login OK:', data);
+
+        const token = data.token || 'mock-token';
+
+        const user = {
+          id: data.id,
+          nome: data.nome,
+          email: data.email,
+          tipo: 'PROFISSIONAL',
+        };
+
+        const profissional = {
+          id: data.id,
+          nome: data.nome,
+          email: data.email,
+          especialidade: data.especialidade,
+          registroProfissional: data.registroProfissional,
+        };
+
+        await login(token, user, undefined, profissional);
+
+        Alert.alert('Sucesso', `Bem-vindo, ${user.nome}!`);
+        navigation.navigate('tela_profissional');
+
+      } else {
+        Alert.alert('Erro', `Status: ${response.status}\n${responseText}`);
+      }
+    } catch (error) {
+      console.error('Erro na requisição:', error);
+      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Login do Profissional</Text>
+
       <TextInput
         style={styles.input}
         placeholder="Registro"
@@ -28,6 +79,7 @@ const TelaLoginProfissional = ({  }) => {
         value={registro}
         onChangeText={setRegistro}
       />
+
       <TextInput
         style={styles.input}
         placeholder="Senha"
@@ -35,21 +87,23 @@ const TelaLoginProfissional = ({  }) => {
         value={senha}
         onChangeText={setSenha}
       />
-      <TouchableOpacity onPress={() => navigation.navigate('tela_profissional') }
-      style={styles.botao} >
-        <Text style={styles.textoBotao}>Entrar</Text>
+
+      <TouchableOpacity onPress={handleLogin} style={styles.botao} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.textoBotao}>Entrar</Text>
+        )}
       </TouchableOpacity>
- 
- 
- <TouchableOpacity style={styles.botaoVoltar} onPress={() => navigation.navigate('inicio') }  >
-             <Text style={styles.botaoVoltarTexto}>Voltar</Text>
-           </TouchableOpacity>
-        
+
+      <TouchableOpacity style={styles.botaoVoltar} onPress={() => navigation.navigate('inicio')}>
+        <Text style={styles.botaoVoltarTexto}>Voltar</Text>
+      </TouchableOpacity>
     </View>
-
-
   );
 };
+
+export default TelaLoginProfissional;
 
 const styles = StyleSheet.create({
   container: {
@@ -84,21 +138,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  botaoVoltarTexto: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  
-   botaoVoltar: {
+  botaoVoltar: {
     backgroundColor: '#A9A9A9',
     padding: 15,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 20,
-    marginBottom: 30
   },
-
+  botaoVoltarTexto: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
-
-export default TelaLoginProfissional;

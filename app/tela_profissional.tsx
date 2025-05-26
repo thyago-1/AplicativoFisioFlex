@@ -2,65 +2,69 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { FontAwesome5, MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
 
 const TelaProfissional = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const { token, profissional } = useAuth();
+
+  const handleNavigate = (screen: string) => {
+    if (!token) {
+      alert('Você precisa estar logado!');
+      return;
+    }
+    navigation.navigate(screen, { profissional });
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Área do Profissional</Text>
       <View style={styles.grid}>
-        <TouchableOpacity onPress={() => navigation.navigate('pacientes') }
-        style={styles.card} >
+        <TouchableOpacity onPress={() => handleNavigate('pacientes')} style={styles.card}>
           <FontAwesome5 name="user-md" size={30} color="#fff" />
           <Text style={styles.cardText}>Meus Pacientes</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('consultas_profissional') } 
-        style={styles.card} >
+        <TouchableOpacity onPress={() => handleNavigate('consultas_profissional')} style={styles.card}>
           <MaterialIcons name="event" size={30} color="#fff" />
           <Text style={styles.cardText}>Consultas</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('prescricoes') }
-        style={styles.card} >
+        <TouchableOpacity onPress={() => handleNavigate('prescricoes')} style={styles.card}>
           <MaterialIcons name="assignment" size={30} color="#fff" />
           <Text style={styles.cardText}>Prescrições</Text>
         </TouchableOpacity>
-       
-        <TouchableOpacity onPress={() => navigation.navigate('gerenciar') } style={styles.card} >
+
+        <TouchableOpacity onPress={() => handleNavigate('gerenciar')} style={styles.card}>
           <MaterialIcons name="dashboard" size={30} color="#fff" />
           <Text style={styles.cardText}>Gerenciar</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('simetografo') }
-        style={styles.card} >
-          <MaterialIcons name="camera" size={30} color="#fff" />
-          <Text style={styles.cardText}>Simetógrafo</Text>
+        <TouchableOpacity onPress={() => handleNavigate('evolucao_paciente')} style={styles.card}>
+          <MaterialIcons name="show-chart" size={30} color="#fff" />
+          <Text style={styles.cardText}>Evolução</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('financas') }
-        style={styles.card} >
+        <TouchableOpacity onPress={() => handleNavigate('financas')} style={styles.card}>
           <MaterialIcons name="payments" size={30} color="#fff" />
           <Text style={styles.cardText}>Finanças</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} >
+        <TouchableOpacity onPress={() => handleNavigate('minha_conta')} style={styles.card}>
           <MaterialIcons name="person" size={30} color="#fff" />
           <Text style={styles.cardText}>Minha Conta</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.card} >
+        <TouchableOpacity onPress={() => handleNavigate('suporte')} style={styles.card}>
           <MaterialIcons name="support-agent" size={30} color="#fff" />
           <Text style={styles.cardText}>Suporte</Text>
         </TouchableOpacity>
-        
- 
-
       </View>
     </View>
   );
 };
+
+export default TelaProfissional;
 
 const styles = StyleSheet.create({
   container: {
@@ -103,5 +107,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
-export default TelaProfissional;

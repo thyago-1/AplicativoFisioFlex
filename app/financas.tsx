@@ -1,22 +1,70 @@
-import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+interface ResumoFinanceiro {
+  receitaMensal: number;
+  despesaMensal: number;
+}
+
+interface Boleto {
+  id: number;
+  descricao: string;
+  valor: number;
+  vencimento: string;
+}
+
 const TelaFinancas = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
+  const [resumo, setResumo] = useState<ResumoFinanceiro | null>(null);
+  const [boletosReceber, setBoletosReceber] = useState<Boleto[]>([]);
+  const [boletosPagar, setBoletosPagar] = useState<Boleto[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const receitaMensal = 7500;
-  const despesaMensal = 3200;
+  const API_BASE = 'http://10.0.2.2:8080/financas'; // ajuste para seu IP se usar dispositivo físico
 
-  const boletosReceber = [
-    { id: '1', cliente: 'Maria Souza', valor: 200, vencimento: '10/04/2025' },
-    { id: '2', cliente: 'Carlos Oliveira', valor: 350, vencimento: '15/04/2025' },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [resumoRes, receberRes, pagarRes] = await Promise.all([
+          fetch(`${API_BASE}/resumo`),
+          fetch(`${API_BASE}/boletos-receber`),
+          fetch(`${API_BASE}/boletos-pagar`),
+        ]);
 
-  const boletosPagar = [
-    { id: '1', descricao: 'Aluguel', valor: 1500, vencimento: '05/04/2025' },
-    { id: '2', descricao: 'Conta de Luz', valor: 300, vencimento: '07/04/2025' },
-  ];
+        const resumoJson = await resumoRes.json();
+        const receberJson = await receberRes.json();
+        const pagarJson = await pagarRes.json();
+
+        setResumo(resumoJson);
+        setBoletosReceber(receberJson);
+        setBoletosPagar(pagarJson);
+      } catch (error) {
+        console.error(error);
+        Alert.alert('Erro', 'Erro ao carregar informações financeiras');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#1A335C" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -25,21 +73,25 @@ const TelaFinancas = () => {
       <View style={styles.resumoContainer}>
         <View style={styles.cardReceita}>
           <Text style={styles.label}>Receita Mensal</Text>
-          <Text style={styles.valor}>R$ {receitaMensal.toFixed(2)}</Text>
+          <Text style={styles.valor}>
+            R$ {resumo?.receitaMensal.toFixed(2)}
+          </Text>
         </View>
         <View style={styles.cardDespesa}>
           <Text style={styles.label}>Despesa Mensal</Text>
-          <Text style={styles.valor}>R$ {despesaMensal.toFixed(2)}</Text>
+          <Text style={styles.valor}>
+            R$ {resumo?.despesaMensal.toFixed(2)}
+          </Text>
         </View>
       </View>
 
       <Text style={styles.subtitulo}>Boletos a Receber</Text>
       <FlatList
         data={boletosReceber}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.boletoCardReceber}>
-            <Text>{item.cliente} - R$ {item.valor.toFixed(2)}</Text>
+            <Text>{item.descricao} - R$ {item.valor.toFixed(2)}</Text>
             <Text>Vencimento: {item.vencimento}</Text>
           </View>
         )}
@@ -48,7 +100,7 @@ const TelaFinancas = () => {
       <Text style={styles.subtitulo}>Boletos a Pagar</Text>
       <FlatList
         data={boletosPagar}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <View style={styles.boletoCardPagar}>
             <Text>{item.descricao} - R$ {item.valor.toFixed(2)}</Text>
@@ -57,13 +109,17 @@ const TelaFinancas = () => {
         )}
       />
 
-      <TouchableOpacity onPress={() => navigation.navigate('tela_profissional') }
-      style={styles.botaoVoltar}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('tela_profissional')}
+        style={styles.botaoVoltar}
+      >
         <Text style={styles.textoBotao}>Voltar</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+export default TelaFinancas;
 
 const styles = StyleSheet.create({
   container: {
@@ -139,5 +195,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default TelaFinancas;

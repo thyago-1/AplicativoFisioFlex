@@ -1,31 +1,79 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-const GerenciarCampanhas = () => {
+interface Campanha {
+  id: number;
+  titulo: string;
+  descricao: string;
+}
 
-  const navigation = useNavigation();
+const GerenciarCampanhas = () => {
+  const navigation = useNavigation<any>();
+
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [campanhas, setCampanhas] = useState([
-    { id: '1', titulo: 'Semana da Postura', descricao: 'Campanha para reeducação postural com descontos especiais.' },
-    { id: '2', titulo: 'Saúde nas Empresas', descricao: 'Divulgação de pacotes para atendimento corporativo.' },
-  ]);
+  const [campanhas, setCampanhas] = useState<Campanha[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const adicionarCampanha = () => {
-    if (titulo && descricao) {
-      const novaCampanha = {
-        id: Date.now().toString(),
-        titulo,
-        descricao,
-      };
-      setCampanhas([novaCampanha, ...campanhas]);
-      setTitulo('');
-      setDescricao('');
+  const API_URL = 'http://10.0.2.2:8080/campanhas'; // ajuste se usar celular
+
+  useEffect(() => {
+    carregarCampanhas();
+  }, []);
+
+  const carregarCampanhas = async () => {
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+      setCampanhas(data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Erro ao carregar campanhas');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const renderCampanha = ({ item }) => (
+  const adicionarCampanha = async () => {
+    if (!titulo || !descricao) {
+      Alert.alert('Erro', 'Preencha todos os campos');
+      return;
+    }
+
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ titulo, descricao }),
+      });
+
+      if (response.ok) {
+        Alert.alert('Sucesso', 'Campanha adicionada');
+        setTitulo('');
+        setDescricao('');
+        carregarCampanhas(); // atualiza lista
+      } else {
+        Alert.alert('Erro', 'Erro ao salvar campanha');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Erro ao conectar com o servidor');
+    }
+  };
+
+  const renderCampanha = ({ item }: { item: Campanha }) => (
     <View style={styles.campanhaCard}>
       <Text style={styles.tituloCampanha}>{item.titulo}</Text>
       <Text style={styles.descricaoCampanha}>{item.descricao}</Text>
@@ -52,23 +100,31 @@ const GerenciarCampanhas = () => {
       />
 
       <TouchableOpacity style={styles.botaoAdicionar} onPress={adicionarCampanha}>
-        <Text style={styles.textoBotao}>Adicionar Campanha</Text>
-      </TouchableOpacity>
+  <Text style={styles.textoBotao}>Adicionar Campanha</Text>
+</TouchableOpacity>
 
-      <FlatList
-        data={campanhas}
-        keyExtractor={(item) => item.id}
-        renderItem={renderCampanha}
-        style={{ marginTop: 20 }}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#1A335C" style={{ marginTop: 20 }} />
+      ) : (
+        <FlatList
+          data={campanhas}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderCampanha}
+          style={{ marginTop: 20 }}
+        />
+      )}
 
-      <TouchableOpacity onPress={() => navigation.navigate('gerenciar') }
-      style={styles.botaoVoltar}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('gerenciar')}
+        style={styles.botaoVoltar}
+      >
         <Text style={styles.textoBotaoVoltar}>Voltar</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+export default GerenciarCampanhas;
 
 const styles = StyleSheet.create({
   container: {
@@ -134,5 +190,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default GerenciarCampanhas;

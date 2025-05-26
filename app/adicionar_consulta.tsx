@@ -1,37 +1,53 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
 const TelaAdicionarConsulta = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [data, setData] = useState(new Date());
   const [hora, setHora] = useState(new Date());
   const [paciente, setPaciente] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
-  const adicionarConsulta = () => {
+  const adicionarConsulta = async () => {
     if (!paciente.trim()) {
-      alert('Por favor, informe o nome do paciente.');
+      Alert.alert('Erro', 'Por favor, informe o nome do paciente.');
       return;
     }
 
     const novaConsulta = {
-      id: Math.random().toString(),
       paciente,
-      data: data.toLocaleDateString(),
-      hora: hora.toLocaleTimeString(),
+      data: data.toISOString().split('T')[0], // "yyyy-MM-dd"
+      hora: hora.toTimeString().split(' ')[0], // "HH:mm:ss"
     };
 
-    console.log('Nova consulta adicionada:', novaConsulta);
-    navigation.goBack();
+    try {
+      const response = await fetch('http://10.0.2.2:8080/consultas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(novaConsulta),
+      });
+
+      if (response.ok) {
+        Alert.alert('Sucesso', 'Consulta adicionada com sucesso!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Erro', 'Erro ao salvar a consulta.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Adicionar Consulta</Text>
-      
+
       <Text style={styles.label}>Paciente</Text>
       <TextInput
         style={styles.input}

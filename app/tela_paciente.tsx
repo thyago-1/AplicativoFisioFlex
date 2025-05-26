@@ -1,47 +1,39 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons'; 
-import { useNavigation } from "@react-navigation/native"; 
+import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 const TelaPaciente = () => {
-  const navigation = useNavigation();
   return (
     <View style={styles.container}>
-    
       <View style={styles.header}>
-        <TouchableOpacity>   
+        <TouchableOpacity>
           <Ionicons name="menu" size={24} color="#1A335C" />
         </TouchableOpacity>
-        <Image source={require('./assets/img/icone.png')} style={styles.logo} />
-        <TouchableOpacity>
 
-          <Ionicons name="person" size={24} color="#1A335C" 
-          onPress={() => navigation.navigate('usuario') }  />
-        
+        <Image source={require('../assets/img/icone.png')} style={styles.logo} />
+
+        <TouchableOpacity onPress={() => router.push('/usuario')}>
+          <Ionicons name="person" size={24} color="#1A335C" />
         </TouchableOpacity>
       </View>
 
       <Text style={styles.titulo}>Meu Espaço</Text>
 
-  
       <View style={styles.secao}>
         <Text style={styles.secaoTitulo}>Acesso Rápido</Text>
         <View style={styles.cardContainer}>
-          <TouchableOpacity  onPress={() => navigation.navigate('evolucao') }  
-          style={styles.card}>
+          <TouchableOpacity onPress={() => router.push('/evolucao')} style={styles.card}>
             <Ionicons name="person-outline" size={40} color="#1A335C" />
             <Text style={styles.cardTexto}>Minha Evolução</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity     onPress={() => navigation.navigate('atendimentos') }        
-          style={styles.card}>
-            <Ionicons
-             name="calendar-outline" size={40} color="#1A335C" />
+          <TouchableOpacity onPress={() => router.push('/atendimentos')} style={styles.card}>
+            <Ionicons name="calendar-outline" size={40} color="#1A335C" />
             <Text style={styles.cardTexto}>Meus Atendimentos</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity  onPress={() => navigation.navigate('atividades') } 
-           style={styles.card}>
+          <TouchableOpacity onPress={() => router.push('/atividades')} style={styles.card}>
             <Ionicons name="barbell-outline" size={40} color="#1A335C" />
             <Text style={styles.cardTexto}>Minhas Atividades</Text>
           </TouchableOpacity>
@@ -51,14 +43,12 @@ const TelaPaciente = () => {
       <View style={styles.secao}>
         <Text style={styles.secaoTitulo}>Financeiro</Text>
         <View style={styles.cardContainer}>
-          <TouchableOpacity  onPress={() => navigation.navigate('pagamentos') }  
-          style={styles.card}>
+          <TouchableOpacity onPress={() => router.push('/pagamentos')} style={styles.card}>
             <Ionicons name="card-outline" size={40} color="#1A335C" />
             <Text style={styles.cardTexto}>Meus Pagamentos</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity  onPress={() => navigation.navigate('consultas') }  
-          style={styles.card}>
+          <TouchableOpacity onPress={() => router.push('/consultas')} style={styles.card}>
             <Ionicons name="document-text-outline" size={40} color="#1A335C" />
             <Text style={styles.cardTexto}>Consultar Serviços</Text>
           </TouchableOpacity>
@@ -68,14 +58,12 @@ const TelaPaciente = () => {
       <View style={styles.secao}>
         <Text style={styles.secaoTitulo}>Campanhas</Text>
         <View style={styles.cardContainer}>
-          <TouchableOpacity  onPress={() => navigation.navigate('campanhas') }  
-           style={styles.card}>
+          <TouchableOpacity onPress={() => router.push('/campanhas')} style={styles.card}>
             <Ionicons name="people-outline" size={40} color="#1A335C" />
             <Text style={styles.cardTexto}>Campanhas</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity  onPress={() => navigation.navigate('publicidade') } 
-            style={styles.card}>
+          <TouchableOpacity onPress={() => router.push('/publicidade')} style={styles.card}>
             <Ionicons name="globe-outline" size={40} color="#1A335C" />
             <Text style={styles.cardTexto}>Publicidade</Text>
           </TouchableOpacity>

@@ -1,35 +1,115 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { useNavigation } from "@react-navigation/native"; 
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Alert,
+  ActivityIndicator,
+} from 'react-native';
+import { router } from 'expo-router';
+import { useAuth } from '../contexts/AuthContext';
 
 const TelaLogin = () => {
- const navigation = useNavigation();
+  const [cpf, setCpf] = useState('');
+  const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const { login } = useAuth();
+
+  const handleLogin = async () => {
+    if (!cpf || !senha) {
+      Alert.alert('Erro', 'Por favor, informe o CPF e a senha.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://10.0.2.2:8080/pacientes/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cpf: cpf.replace(/\D/g, ''), senha }),
+      });
+
+      const responseText = await response.text();
+      console.log('Status:', response.status);
+      console.log('Response Raw Text:', responseText);
+
+      if (response.ok) {
+        const data = JSON.parse(responseText);
+        console.log('Parsed Response:', data);
+
+        // ✅ Verifica se data.usuario e data.paciente existem:
+        if (!data.usuario || !data.paciente) {
+          console.warn('⚠️ Resposta incompleta: falta usuario ou paciente');
+        }
+
+        await login(data.token, data.usuario, data.paciente);
+
+        Alert.alert('Sucesso', `Bem-vindo, ${data.usuario?.nome || 'usuário'}!`, [
+          {
+            text: 'OK',
+            onPress: () => {
+              router.replace('/tela_paciente');
+            },
+          },
+        ]);
+      } else {
+        Alert.alert('Erro', `Status: ${response.status}\n${responseText}`);
+      }
+    } catch (error) {
+      console.error('Erro de rede:', error);
+      Alert.alert('Erro', 'Erro ao conectar com o servidor.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Image source={require('./assets/img/icone.png')} style={styles.logo} />
-      
-      
+      <Image source={require('../assets/img/icone.png')} style={styles.logo} />
+
       <Text style={styles.instrucao}>Olá, informe seus dados:</Text>
 
-      <TextInput style={styles.input} placeholder="CPF" keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Senha" secureTextEntry />
+      <TextInput
+        style={styles.input}
+        placeholder="CPF"
+        keyboardType="numeric"
+        value={cpf}
+        onChangeText={setCpf}
+      />
 
-      <TouchableOpacity onPress={() => navigation.navigate('redefinir') }> 
+      <TextInput
+        style={styles.input}
+        placeholder="Senha"
+        secureTextEntry
+        value={senha}
+        onChangeText={setSenha}
+      />
+
+      <TouchableOpacity onPress={() => router.push('/redefinir')}>
         <Text style={styles.linkSenha}>Esqueci minha senha!</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('tela_paciente') } 
-      
-      style={styles.btEntrar}>
-        <Text style={styles.btTexto}>Entrar</Text>
+      <TouchableOpacity onPress={handleLogin} style={styles.btEntrar} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.btTexto}>Entrar</Text>
+        )}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('inicio') }> 
+      <TouchableOpacity onPress={() => router.push('/')}>
         <Text style={styles.voltar}>Voltar</Text>
       </TouchableOpacity>
     </View>
   );
 };
+
+export default TelaLogin;
 
 const styles = StyleSheet.create({
   container: {
@@ -40,9 +120,9 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logo: {
-    width: 400,
-    height: 400,
-    marginBottom:-90,
+    width: 200,
+    height: 200,
+    marginBottom: 20,
   },
   instrucao: {
     fontSize: 18,
@@ -83,8 +163,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginTop: 20,
-  
   },
 });
-
-export default TelaLogin;

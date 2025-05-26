@@ -1,28 +1,35 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { CalendarDays } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 
-const TelaAgenda = () => {
-  const navigation = useNavigation();
+interface Compromisso {
+  id: number;
+  paciente: string;
+  data: string; // "2025-05-03"
+  hora: string; // "14:00"
+}
 
-  const [compromissos, setCompromissos] = useState([
-    { id: '1', paciente: 'João Silva', data: '2025-04-05', hora: '09:00' },
-    { id: '2', paciente: 'Ana Costa', data: '2025-04-05', hora: '11:00' },
-    { id: '3', paciente: 'Lucas Pereira', data: '2025-04-06', hora: '14:00' },
-    { id: '4', paciente: 'Fernanda Lima', data: '2025-04-07', hora: '10:30' },
-    { id: '5', paciente: 'Carlos Mendes', data: '2025-04-07', hora: '13:00' },
-    { id: '6', paciente: 'Debora Teixeira', data: '2025-04-08', hora: '09:45' },
-    { id: '7', paciente: 'Diego Souza', data: '2025-04-10', hora: '15:30' },
-    { id: '8', paciente: 'Tatiane Alves', data: '2025-04-12', hora: '08:00' },
-    { id: '9', paciente: 'Rafael Monteiro', data: '2025-05-01', hora: '11:15' },
-    { id: '10', paciente: 'Juliana Rocha', data: '2025-05-03', hora: '10:00' },
-    { id: '11', paciente: 'Marcos Vinicius', data: '2025-05-05', hora: '14:45' },
-  ]);
+const TelaAgenda = () => {
+  const navigation = useNavigation<any>();
+
+  const [compromissos, setCompromissos] = useState<Compromisso[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [mesSelecionado, setMesSelecionado] = useState('04');
   const [diaSelecionado, setDiaSelecionado] = useState('');
+
+  useEffect(() => {
+    fetch('http://10.0.2.2:8080/consultas') // ajuste para seu IP se estiver em celular físico
+      .then(res => res.json())
+      .then(data => setCompromissos(data))
+      .catch(error => {
+        console.error(error);
+        Alert.alert('Erro', 'Não foi possível carregar os compromissos.');
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtrarCompromissos = () => {
     return compromissos.filter((item) => {
@@ -47,6 +54,7 @@ const TelaAgenda = () => {
           >
             <Picker.Item label="Abril" value="04" />
             <Picker.Item label="Maio" value="05" />
+            <Picker.Item label="Junho" value="06" />
           </Picker>
         </View>
 
@@ -65,20 +73,24 @@ const TelaAgenda = () => {
         </View>
       </View>
 
-      <FlatList
-        data={filtrarCompromissos()}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.cardHeader}>
-              <CalendarDays size={20} color="#1A335C" />
-              <Text style={styles.data}>{item.data}</Text>
+      {loading ? (
+        <ActivityIndicator size="large" color="#1A335C" />
+      ) : (
+        <FlatList
+          data={filtrarCompromissos()}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View style={styles.cardHeader}>
+                <CalendarDays size={20} color="#1A335C" />
+                <Text style={styles.data}>{item.data}</Text>
+              </View>
+              <Text style={styles.hora}>🕒 {item.hora}</Text>
+              <Text style={styles.paciente}>👤 {item.paciente}</Text>
             </View>
-            <Text style={styles.hora}>🕒 {item.hora}</Text>
-            <Text style={styles.paciente}>👤 {item.paciente}</Text>
-          </View>
-        )}
-      />
+          )}
+        />
+      )}
 
       <TouchableOpacity onPress={() => navigation.navigate('adicionar_compromisso')} style={styles.botaoAdicionar}>
         <Text style={styles.textoBotao}>Adicionar Compromisso</Text>

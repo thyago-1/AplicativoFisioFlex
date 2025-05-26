@@ -3,25 +3,48 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { useNavigation } from '@react-navigation/native';
 
 const AdicionarPrescricaoScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [paciente, setPaciente] = useState('');
   const [descricao, setDescricao] = useState('');
   const [exercicios, setExercicios] = useState('');
 
-  const salvarPrescricao = () => {
+  const salvarPrescricao = async () => {
     if (!paciente || !descricao || !exercicios) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios.');
       return;
     }
 
-    
-    Alert.alert('Sucesso', 'Prescrição adicionada com sucesso!');
-    navigation.goBack();
+    const novaPrescricao = {
+      paciente,
+      descricao,
+      exercicios,
+    };
+
+    try {
+      const response = await fetch('http://10.0.2.2:8080/prescricoes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(novaPrescricao),
+      });
+
+      if (response.ok) {
+        Alert.alert('Sucesso', 'Prescrição adicionada com sucesso!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Erro', 'Erro ao salvar prescrição.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Erro de conexão com o servidor.');
+    }
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Adicionar Prescrição</Text>
+
       <TextInput
         style={styles.input}
         placeholder="Nome do Paciente"
@@ -37,13 +60,16 @@ const AdicionarPrescricaoScreen = () => {
       />
       <TextInput
         style={styles.input}
-        placeholder="Exercicios"
+        placeholder="Exercícios"
         value={exercicios}
         onChangeText={setExercicios}
+        multiline
       />
+
       <TouchableOpacity style={styles.botaoSalvar} onPress={salvarPrescricao}>
         <Text style={styles.textoBotao}>Salvar</Text>
       </TouchableOpacity>
+
       <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.goBack()}>
         <Text style={styles.textoBotao}>Cancelar</Text>
       </TouchableOpacity>

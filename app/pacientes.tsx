@@ -1,30 +1,60 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, TextInput } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
 
-
+interface Paciente {
+  id: number;
+  nome: string;
+  cpf: string;
+  email: string;
+  senha: string;
+  idade: number;
+  peso: number;
+  altura: number;
+  sexo: string;
+  endereco: string;
+  telefone: string;
+  tipo: string;
+}
 
 const MeusPacientesScreen = () => {
-  const navigation = useNavigation();
-  const [pacientes, setPacientes] = useState([
-    {
-      id: '1',
-      nome: 'João Silva',
-      cpf: '123.456.789-00',
-      imagem: require('./assets/img/icone.png'),
-    },
-    {
-      id: '2',
-      nome: 'Maria Souza',
-      cpf: '987.654.321-00',
-      imagem: require('./assets/img/icone.png'),
-    },
-  ]);
-  
+  const navigation = useNavigation<any>();
+  const { token } = useAuth();
+
+  const [pacientes, setPacientes] = useState<Paciente[]>([]);
   const [busca, setBusca] = useState('');
-  
-  const pacientesFiltrados = pacientes.filter(paciente => 
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPacientes = async () => {
+      try {
+        const response = await fetch('http://10.0.2.2:8080/pacientes', {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          const erro = await response.text();
+          throw new Error(`Erro: ${response.status} - ${erro}`);
+        }
+
+        const data = await response.json();
+        setPacientes(data);
+      } catch (error) {
+        console.error('Erro ao buscar pacientes:', error);
+        Alert.alert('Erro', 'Não foi possível carregar os pacientes.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPacientes();
+  }, [token]);
+
+  const pacientesFiltrados = pacientes.filter(paciente =>
     paciente.nome.toLowerCase().includes(busca.toLowerCase()) ||
     paciente.cpf.includes(busca)
   );
@@ -38,27 +68,32 @@ const MeusPacientesScreen = () => {
         value={busca}
         onChangeText={setBusca}
       />
-      <FlatList
-        data={pacientesFiltrados}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.pacienteCard}
-            onPress={() => navigation.navigate('detalhes_paciente', { paciente: item })}
 
-          >
-            <Image source={item.imagem} style={styles.avatar} />
-            <View style={styles.infoContainer}>
-              <Text style={styles.nome}>{item.nome}</Text>
-              <Text style={styles.detalhes}>CPF: {item.cpf}</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      />
-   <TouchableOpacity  style={styles.botaoAdd} onPress={() => navigation.navigate('adicionar_paciente')} >
+      {loading ? (
+        <ActivityIndicator size="large" color="#1A335C" />
+      ) : (
+        <FlatList
+          data={pacientesFiltrados}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.pacienteCard}
+              onPress={() => navigation.navigate('detalhes_paciente', { paciente: item })}
+            >
+              <Image source={require('../assets/img/icone.png')} style={styles.avatar} />
+              <View style={styles.infoContainer}>
+                <Text style={styles.nome}>{item.nome}</Text>
+                <Text style={styles.detalhes}>CPF: {item.cpf}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
+      )}
+
+      <TouchableOpacity style={styles.botaoAdd} onPress={() => navigation.navigate('adicionar_paciente')}>
         <Text style={styles.textoBotaoAdd}>Adicionar Paciente</Text>
       </TouchableOpacity>
-  
+
       <TouchableOpacity style={styles.botaoVoltar} onPress={() => navigation.navigate('tela_profissional')}>
         <Text style={styles.textoBotao}>Voltar</Text>
       </TouchableOpacity>
@@ -141,7 +176,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-
 });
 
 export default MeusPacientesScreen;
