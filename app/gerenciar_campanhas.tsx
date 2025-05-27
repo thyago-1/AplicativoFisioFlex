@@ -23,30 +23,34 @@ const GerenciarCampanhas = () => {
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const API_URL = 'http://10.0.2.2:8080/campanhas'; // ajuste se usar celular
+  const API_URL = 'http://10.0.2.2:8080/campanhas'; // Ajuste para IP local conforme necessário
 
   useEffect(() => {
     carregarCampanhas();
   }, []);
 
   const carregarCampanhas = async () => {
+    setLoading(true);
     try {
       const response = await fetch(API_URL);
+      if (!response.ok) {
+        throw new Error(`Erro: ${response.status}`);
+      }
       const data = await response.json();
       setCampanhas(data);
     } catch (error) {
       console.error(error);
-      Alert.alert('Erro', 'Erro ao carregar campanhas');
+      Alert.alert('Erro', 'Não foi possível carregar as campanhas.');
     } finally {
       setLoading(false);
     }
   };
 
   const adicionarCampanha = async () => {
-    if (!titulo || !descricao) {
-      Alert.alert('Erro', 'Preencha todos os campos');
+    if (!titulo.trim() || !descricao.trim()) {
+      Alert.alert('Atenção', 'Preencha todos os campos!');
       return;
     }
 
@@ -60,16 +64,16 @@ const GerenciarCampanhas = () => {
       });
 
       if (response.ok) {
-        Alert.alert('Sucesso', 'Campanha adicionada');
+        Alert.alert('Sucesso', 'Campanha adicionada com sucesso!');
         setTitulo('');
         setDescricao('');
-        carregarCampanhas(); // atualiza lista
+        carregarCampanhas();
       } else {
-        Alert.alert('Erro', 'Erro ao salvar campanha');
+        Alert.alert('Erro', 'Erro ao adicionar a campanha.');
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Erro', 'Erro ao conectar com o servidor');
+      Alert.alert('Erro', 'Erro de conexão com o servidor.');
     }
   };
 
@@ -100,8 +104,8 @@ const GerenciarCampanhas = () => {
       />
 
       <TouchableOpacity style={styles.botaoAdicionar} onPress={adicionarCampanha}>
-  <Text style={styles.textoBotao}>Adicionar Campanha</Text>
-</TouchableOpacity>
+        <Text style={styles.textoBotao}>Adicionar Campanha</Text>
+      </TouchableOpacity>
 
       {loading ? (
         <ActivityIndicator size="large" color="#1A335C" style={{ marginTop: 20 }} />
@@ -110,6 +114,7 @@ const GerenciarCampanhas = () => {
           data={campanhas}
           keyExtractor={(item) => item.id.toString()}
           renderItem={renderCampanha}
+          ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma campanha cadastrada.</Text>}
           style={{ marginTop: 20 }}
         />
       )}
@@ -188,5 +193,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#777',
+    fontSize: 14,
   },
 });

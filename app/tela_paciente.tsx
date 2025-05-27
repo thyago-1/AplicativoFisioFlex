@@ -33,9 +33,9 @@ const TelaPaciente = () => {
             <Text style={styles.cardTexto}>Meus Atendimentos</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => router.push('/atividades')} style={styles.card}>
+          <TouchableOpacity onPress={() => router.push('/minhas_prescricoes')} style={styles.card}>
             <Ionicons name="barbell-outline" size={40} color="#1A335C" />
-            <Text style={styles.cardTexto}>Minhas Atividades</Text>
+            <Text style={styles.cardTexto}>Minhas Prescrições</Text>
           </TouchableOpacity>
         </View>
       </View>

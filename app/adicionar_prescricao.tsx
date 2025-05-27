@@ -1,21 +1,62 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
+
+interface Paciente {
+  id: number;
+  nome: string;
+  cpf: string;
+}
 
 const AdicionarPrescricaoScreen = () => {
   const navigation = useNavigation<any>();
-  const [paciente, setPaciente] = useState('');
+  const { token } = useAuth();
+
+  const [pacienteId, setPacienteId] = useState<number | null>(null);
   const [descricao, setDescricao] = useState('');
   const [exercicios, setExercicios] = useState('');
+  const [buscaPaciente, setBuscaPaciente] = useState('');
+  const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [pacientesFiltrados, setPacientesFiltrados] = useState<Paciente[]>([]);
+
+  useEffect(() => {
+    const fetchPacientes = async () => {
+      try {
+        const response = await fetch('http://10.0.2.2:8080/pacientes', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        const data = await response.json();
+        setPacientes(data);
+        setPacientesFiltrados(data);
+      } catch (error) {
+        console.error('Erro ao buscar pacientes:', error);
+      }
+    };
+
+    fetchPacientes();
+  }, [token]);
+
+  const filtrarPacientes = (texto: string) => {
+    setBuscaPaciente(texto);
+    const filtrados = pacientes.filter(p =>
+      p.nome.toLowerCase().includes(texto.toLowerCase()) || 
+      p.cpf.includes(texto)
+    );
+    setPacientesFiltrados(filtrados);
+  };
 
   const salvarPrescricao = async () => {
-    if (!paciente || !descricao || !exercicios) {
+    if (!pacienteId || !descricao || !exercicios) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios.');
       return;
     }
 
     const novaPrescricao = {
-      paciente,
+      pacienteId,
       descricao,
       exercicios,
     };
@@ -25,6 +66,7 @@ const AdicionarPrescricaoScreen = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(novaPrescricao),
       });
@@ -33,10 +75,12 @@ const AdicionarPrescricaoScreen = () => {
         Alert.alert('Sucesso', 'Prescrição adicionada com sucesso!');
         navigation.goBack();
       } else {
-        Alert.alert('Erro', 'Erro ao salvar prescrição.');
+        const erro = await response.text();
+        console.error('Erro:', erro);
+        Alert.alert('Erro', `Erro ao salvar prescrição. ${response.status}`);
       }
     } catch (error) {
-      console.error(error);
+      console.error('Erro:', error);
       Alert.alert('Erro', 'Erro de conexão com o servidor.');
     }
   };
@@ -47,10 +91,34 @@ const AdicionarPrescricaoScreen = () => {
 
       <TextInput
         style={styles.input}
-        placeholder="Nome do Paciente"
-        value={paciente}
-        onChangeText={setPaciente}
+        placeholder="Buscar Paciente por nome ou CPF"
+        value={buscaPaciente}
+        onChangeText={filtrarPacientes}
       />
+
+      {pacientesFiltrados.length > 0 && (
+        <FlatList
+          data={pacientesFiltrados}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={styles.itemPaciente}
+              onPress={() => {
+                setPacienteId(item.id);
+                setBuscaPaciente(item.nome);  // Preenche o nome no campo
+                setPacientesFiltrados([]);    // Oculta a lista após seleção
+              }}
+            >
+              <Text>{item.nome} - CPF: {item.cpf}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
+
+      {pacienteId && (
+        <Text style={styles.infoSelecionado}>Paciente selecionado ID: {pacienteId}</Text>
+      )}
+
       <TextInput
         style={styles.input}
         placeholder="Descrição"
@@ -58,8 +126,9 @@ const AdicionarPrescricaoScreen = () => {
         onChangeText={setDescricao}
         multiline
       />
+
       <TextInput
-        style={styles.input}
+        style={[styles.input, { height: 100 }]}
         placeholder="Exercícios"
         value={exercicios}
         onChangeText={setExercicios}
@@ -95,6 +164,17 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     marginBottom: 10,
     fontSize: 16,
+  },
+  itemPaciente: {
+    backgroundColor: '#eee',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 5,
+  },
+  infoSelecionado: {
+    fontSize: 14,
+    marginBottom: 10,
+    color: 'green',
   },
   botaoSalvar: {
     backgroundColor: '#1A335C',

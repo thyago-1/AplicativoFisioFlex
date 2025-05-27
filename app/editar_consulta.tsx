@@ -1,61 +1,74 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useAuth } from '@/contexts/AuthContext';
 
 const TelaEditarConsulta = () => {
-  const navigation = useNavigation();
-  const route = useRoute();
+  const navigation = useNavigation<any>();
+  const route = useRoute<any>();
   const { consulta } = route.params;
 
- 
-  const [data, setData] = useState(new Date(consulta.data.split('/').reverse().join('-')));
+  const { token } = useAuth();
 
-
-  const [paciente, setPaciente] = useState(consulta.paciente);
-
-  
+  const [data, setData] = useState(new Date(consulta.data));
   const [hora, setHora] = useState(() => {
-    const [hh, mm] = consulta.hora.split(':'); 
-    const date = new Date(data);
-    date.setHours(Number(hh), Number(mm)); 
+    const [hh, mm] = consulta.hora.split(':');
+    const date = new Date();
+    date.setHours(Number(hh), Number(mm));
     return date;
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
-  const salvarEdicao = () => {
-    if (!paciente || !data || !hora) {
-      alert('Preencha todos os campos!');
+  const salvarEdicao = async () => {
+    if (!data || !hora) {
+      Alert.alert('Erro', 'Preencha todos os campos!');
       return;
     }
 
     const consultaEditada = {
       id: consulta.id,
-      paciente,
+      pacienteId: consulta.paciente.id,  // Mantemos o mesmo paciente
       data: data.toISOString().split('T')[0],
       hora: hora.toTimeString().substring(0, 5),
     };
 
-    console.log('Consulta editada:', consultaEditada);
-    navigation.goBack();
+    try {
+      const response = await fetch(`http://10.0.2.2:8080/consultas/${consulta.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(consultaEditada),
+      });
+
+      if (response.ok) {
+        Alert.alert('Sucesso', 'Consulta atualizada com sucesso!');
+        navigation.goBack();
+      } else {
+        Alert.alert('Erro', 'Erro ao atualizar a consulta.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+    }
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Text style={styles.titulo}>Editar Consulta</Text>
-      
+
       <Text style={styles.label}>Paciente</Text>
-      <TextInput
-        style={styles.input}
-        value={paciente}
-        onChangeText={setPaciente}
-      />
+      <View style={[styles.input, { backgroundColor: '#e0e0e0' }]}>
+        <Text>{consulta.paciente.nome}</Text>
+      </View>
 
       <Text style={styles.label}>Data</Text>
       <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
-        <Text>{data.toLocaleDateString()}</Text>
+        <Text>{data.toLocaleDateString('pt-BR')}</Text>
       </TouchableOpacity>
       {showDatePicker && (
         <DateTimePicker
@@ -71,7 +84,7 @@ const TelaEditarConsulta = () => {
 
       <Text style={styles.label}>Hora</Text>
       <TouchableOpacity onPress={() => setShowTimePicker(true)} style={styles.input}>
-        <Text>{hora.toLocaleTimeString().substring(0, 5)}</Text>
+        <Text>{hora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
       </TouchableOpacity>
       {showTimePicker && (
         <DateTimePicker
@@ -89,9 +102,9 @@ const TelaEditarConsulta = () => {
         <Text style={styles.textoBotao}>Salvar</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.goBack()}>
-        <Text style={styles.textoBotao}>Cancelar</Text>
+        <Text style={styles.textoBotaoCancelar}>Cancelar</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -129,6 +142,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     width: '100%',
+    marginTop: 10,
   },
   botaoCancelar: {
     backgroundColor: '#ccc',
@@ -140,6 +154,11 @@ const styles = StyleSheet.create({
   },
   textoBotao: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  textoBotaoCancelar: {
+    color: '#333',
     fontSize: 16,
     fontWeight: 'bold',
   },

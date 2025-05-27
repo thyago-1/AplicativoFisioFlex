@@ -1,38 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { CalendarDays } from 'lucide-react-native';
 import { Picker } from '@react-native-picker/picker';
 
-interface Compromisso {
+interface Paciente {
   id: number;
-  paciente: string;
+  nome: string;
+}
+
+interface Consulta {
+  id: number;
+  paciente: Paciente;
   data: string; // "2025-05-03"
   hora: string; // "14:00"
 }
 
 const TelaAgenda = () => {
-  const navigation = useNavigation<any>();
+  const router = useRouter();
 
-  const [compromissos, setCompromissos] = useState<Compromisso[]>([]);
+  const [consultas, setConsultas] = useState<Consulta[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [mesSelecionado, setMesSelecionado] = useState('04');
+  const [mesSelecionado, setMesSelecionado] = useState('05');
   const [diaSelecionado, setDiaSelecionado] = useState('');
 
   useEffect(() => {
-    fetch('http://10.0.2.2:8080/consultas') // ajuste para seu IP se estiver em celular físico
-      .then(res => res.json())
-      .then(data => setCompromissos(data))
-      .catch(error => {
-        console.error(error);
-        Alert.alert('Erro', 'Não foi possível carregar os compromissos.');
-      })
-      .finally(() => setLoading(false));
+    carregarConsultas();
   }, []);
 
-  const filtrarCompromissos = () => {
-    return compromissos.filter((item) => {
+  const carregarConsultas = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://10.0.2.2:8080/consultas');
+      if (!response.ok) {
+        throw new Error(`Erro: ${response.status}`);
+      }
+      const data = await response.json();
+      setConsultas(data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Não foi possível carregar as consultas.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filtrarConsultas = () => {
+    return consultas.filter((item) => {
       const [ano, mes, dia] = item.data.split('-');
       const filtroMes = mes === mesSelecionado;
       const filtroDia = diaSelecionado ? dia === diaSelecionado : true;
@@ -77,26 +92,23 @@ const TelaAgenda = () => {
         <ActivityIndicator size="large" color="#1A335C" />
       ) : (
         <FlatList
-          data={filtrarCompromissos()}
+          data={filtrarConsultas()}
           keyExtractor={(item) => item.id.toString()}
+          ListEmptyComponent={<Text style={styles.emptyText}>Nenhuma consulta encontrada.</Text>}
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <TouchableOpacity style={styles.card}>
               <View style={styles.cardHeader}>
                 <CalendarDays size={20} color="#1A335C" />
                 <Text style={styles.data}>{item.data}</Text>
               </View>
               <Text style={styles.hora}>🕒 {item.hora}</Text>
-              <Text style={styles.paciente}>👤 {item.paciente}</Text>
-            </View>
+              <Text style={styles.paciente}>👤 {item.paciente?.nome ?? 'Paciente não informado'}</Text>
+            </TouchableOpacity>
           )}
         />
       )}
 
-      <TouchableOpacity onPress={() => navigation.navigate('adicionar_compromisso')} style={styles.botaoAdicionar}>
-        <Text style={styles.textoBotao}>Adicionar Compromisso</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('tela_profissional')} style={styles.botaoVoltar}>
+      <TouchableOpacity onPress={() => router.push('/tela_profissional')} style={styles.botaoVoltar}>
         <Text style={styles.textoBotao}>Voltar</Text>
       </TouchableOpacity>
     </View>
@@ -180,6 +192,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 20,
+    color: '#777',
+    fontSize: 14,
   },
 });
 

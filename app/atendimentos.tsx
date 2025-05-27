@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, Alert } from "react-native";
+import React, { useEffect, useState, useCallback } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, Alert, SafeAreaView, RefreshControl } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Atendimento {
   id: string;
@@ -11,28 +12,47 @@ interface Atendimento {
 
 const MeusAtendimentosScreen: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { user, token } = useAuth();
   const [atendimentos, setAtendimentos] = useState<Atendimento[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const idPaciente = 1; // ✅ Troque conforme sua lógica de login/AsyncStorage
+  const idPaciente = user?.id; // ✅ Agora puxa dinamicamente do AuthContext
+
   const API_URL = `http://10.0.2.2:8080/atendimentos/${idPaciente}`;
 
-  useEffect(() => {
-    const buscarAtendimentos = async () => {
-      try {
-        const response = await fetch(API_URL);
-        const data = await response.json();
-        setAtendimentos(data);
-      } catch (error) {
-        console.error(error);
-        Alert.alert("Erro", "Não foi possível carregar os atendimentos.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const buscarAtendimentos = useCallback(async () => {
+    if (!idPaciente || !token) {
+      Alert.alert("Erro", "Usuário não autenticado.");
+      return;
+    }
 
+    try {
+      setLoading(true);
+      const response = await fetch(API_URL, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro: ${response.status}`);
+      }
+
+      const data: Atendimento[] = await response.json();
+      setAtendimentos(data);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Erro", "Não foi possível carregar os atendimentos.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [API_URL, idPaciente, token]);
+
+  useEffect(() => {
     buscarAtendimentos();
-  }, []);
+  }, [buscarAtendimentos]);
 
   const hoje = new Date();
 
@@ -41,13 +61,18 @@ const MeusAtendimentosScreen: React.FC = () => {
 
   const renderItem = ({ item }: { item: Atendimento }) => (
     <View style={styles.atendimento}>
-      <Text style={styles.data}>{new Date(item.data).toLocaleDateString()}</Text>
+      <Text style={styles.data}>{new Date(item.data).toLocaleDateString('pt-BR')}</Text>
       <Text style={styles.descricao}>{item.descricao}</Text>
     </View>
   );
 
+  const onRefresh = () => {
+    setRefreshing(true);
+    buscarAtendimentos();
+  };
+
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.navigate("tela_paciente")}>
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
@@ -64,8 +89,10 @@ const MeusAtendimentosScreen: React.FC = () => {
             <Text style={styles.subtitulo}>Atendimentos Passados</Text>
             <FlatList
               data={passados}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item.id}
               renderItem={renderItem}
+              ListEmptyComponent={<Text style={styles.vazio}>Nenhum atendimento passado.</Text>}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             />
           </View>
 
@@ -73,13 +100,15 @@ const MeusAtendimentosScreen: React.FC = () => {
             <Text style={styles.subtitulo}>Atendimentos Futuros</Text>
             <FlatList
               data={futuros}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item.id}
               renderItem={renderItem}
+              ListEmptyComponent={<Text style={styles.vazio}>Nenhum atendimento futuro.</Text>}
+              refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
             />
           </View>
         </>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -130,5 +159,11 @@ const styles = StyleSheet.create({
   descricao: {
     fontSize: 14,
     color: "#555",
+  },
+  vazio: {
+    textAlign: "center",
+    fontSize: 14,
+    color: "#777",
+    marginTop: 10,
   },
 });

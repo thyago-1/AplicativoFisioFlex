@@ -34,47 +34,49 @@ const TelaAdicionarPaciente = () => {
   };
 
   const salvarPaciente = async () => {
-    if (!nome || !cpf || !idade || !peso || !altura || !sexo || !endereco || !telefone || !email || !senha) {
-      Alert.alert('Atenção', 'Preencha todos os campos!');
-      return;
-    }
+  if (!nome || !cpf || !idade || !peso || !altura || !sexo || !endereco || !telefone || !email || !senha) {
+    Alert.alert('Atenção', 'Preencha todos os campos!');
+    return;
+  }
 
-    const novoPaciente = {
-      nome,
-      email,
-      senha,
-      cpf,
-      idade: parseInt(idade),
-      peso: parseFloat(peso),
-      altura: parseFloat(altura),
-      sexo,
-      endereco,
-      telefone,
-    };
-
-    try {
-      const response = await fetch('http://10.0.2.2:8080/pacientes', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(novoPaciente)
-      });
-
-      if (response.ok) {
-        Alert.alert('Sucesso', 'Paciente cadastrado!');
-        navigation.navigate('pacientes');
-      } else {
-        const erro = await response.text();
-        console.error('Erro:', erro);
-        Alert.alert('Erro', `Erro ao salvar paciente. Status: ${response.status}`);
-      }
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Erro', 'Erro ao conectar com o servidor.');
-    }
+  const novoPaciente = {
+    nome,
+    email,
+    senha,
+    cpf,
+    idade: parseInt(idade),
+    peso: parseFloat(peso),
+    altura: parseFloat(altura),
+    sexo,
+    endereco,
+    telefone,
+    tipo: 'Paciente'  
   };
+
+  try {
+    const response = await fetch('http://10.0.2.2:8080/pacientes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(novoPaciente)
+    });
+
+    if (response.ok) {
+      Alert.alert('Sucesso', 'Paciente cadastrado!');
+      navigation.navigate('pacientes');
+    } else {
+      const erro = await response.text();
+      console.error('Erro:', erro);
+      Alert.alert('Erro', `Erro ao salvar paciente. Status: ${response.status}`);
+    }
+  } catch (error) {
+    console.error(error);
+    Alert.alert('Erro', 'Erro ao conectar com o servidor.');
+  }
+};
+
 
   return (
     <View style={styles.container}>

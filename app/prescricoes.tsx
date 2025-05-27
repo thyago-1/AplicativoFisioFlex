@@ -2,9 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
+interface Paciente {
+  id: number;
+  nome: string;
+  cpf: string;
+}
+
 interface Prescricao {
   id: number;
-  paciente: string;
+  paciente: Paciente;
   descricao: string;
   exercicios: string;
 }
@@ -16,7 +22,7 @@ const TelaPrescricoes = () => {
   const [prescricaoSelecionada, setPrescricaoSelecionada] = useState<Prescricao | null>(null);
 
   useEffect(() => {
-    fetch('http://10.0.2.2:8080/prescricoes') // Altere se estiver usando IP local
+    fetch('http://10.0.2.2:8080/prescricoes')
       .then(response => response.json())
       .then(data => setPrescricoes(data))
       .catch(error => {
@@ -41,7 +47,7 @@ const TelaPrescricoes = () => {
       {
         text: 'Remover',
         onPress: () => {
-          // Opcional: integrar com DELETE /prescricoes/{id} depois
+          // Opcional: integrar com DELETE /prescricoes/{id}
           setPrescricoes(prescricoes.filter(p => p.id !== id));
           fecharModal();
         },
@@ -52,12 +58,13 @@ const TelaPrescricoes = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Prescrições</Text>
+
       <FlatList
         data={prescricoes}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.card} onPress={() => abrirDetalhes(item)}>
-            <Text style={styles.paciente}>{item.paciente}</Text>
+            <Text style={styles.paciente}>{item.paciente?.nome}</Text>
             <Text style={styles.descricao}>{item.descricao}</Text>
           </TouchableOpacity>
         )}
@@ -76,7 +83,7 @@ const TelaPrescricoes = () => {
           <View style={styles.modalContent}>
             {prescricaoSelecionada && (
               <>
-                <Text style={styles.modalTitulo}>{prescricaoSelecionada.paciente}</Text>
+                <Text style={styles.modalTitulo}>{prescricaoSelecionada.paciente?.nome}</Text>
                 <Text style={styles.modalDescricao}>{prescricaoSelecionada.descricao}</Text>
                 <Text style={styles.modalDescricao}>Exercícios:</Text>
                 <Text>{prescricaoSelecionada.exercicios}</Text>

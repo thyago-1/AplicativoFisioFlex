@@ -1,250 +1,189 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Dimensions, ActivityIndicator, TextInput, Alert } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { LineChart } from 'react-native-chart-kit';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-
-interface Evolucao {
-  data: string;
-  descricao: string;
-  progresso: number;
-}
+import { Picker } from '@react-native-picker/picker';
 
 interface Paciente {
   id: number;
   nome: string;
 }
 
-const EvolucaoPaciente: React.FC = () => {
+const EvolucaoPacienteScreen = () => {
   const navigation = useNavigation<any>();
 
   const [pacientes, setPacientes] = useState<Paciente[]>([]);
-  const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
-  const [evolucoes, setEvolucoes] = useState<Evolucao[]>([]);
+  const [pacienteId, setPacienteId] = useState<number | undefined>(undefined);
+  const [data, setData] = useState('');
   const [descricao, setDescricao] = useState('');
   const [progresso, setProgresso] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Preenche data automaticamente no formato brasileiro
+    const hoje = new Date();
+    const dia = String(hoje.getDate()).padStart(2, '0');
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const ano = hoje.getFullYear();
+    setData(`${dia}/${mes}/${ano}`);
+
+    // Carregar pacientes
     fetch('http://10.0.2.2:8080/pacientes')
       .then(res => res.json())
-      .then(data => setPacientes(data))
-      .catch(err => console.error('Erro ao buscar pacientes:', err));
+      .then(data => {
+        setPacientes(data);
+        if (data.length > 0) setPacienteId(data[0].id);
+      })
+      .catch(err => {
+        console.error('Erro ao buscar pacientes:', err);
+        Alert.alert('Erro', 'Não foi possível carregar os pacientes.');
+      });
   }, []);
 
-  const buscarEvolucao = (pacienteId: number) => {
-    setLoading(true);
-    fetch(`http://10.0.2.2:8080/evolucao/${pacienteId}`)
-      .then(res => res.json())
-      .then(data => setEvolucoes(data))
-      .catch(err => console.error('Erro ao buscar evolução:', err))
-      .finally(() => setLoading(false));
+  const formatarDataParaBackend = (dataBr: string) => {
+    const [dia, mes, ano] = dataBr.split('/');
+    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD
   };
 
-  const handleAdicionarEvolucao = () => {
-    if (!pacienteSelecionado || !descricao || !progresso) {
-      Alert.alert('Erro', 'Preencha todos os campos.');
+  const handleSalvar = () => {
+    if (!pacienteId || !data || !descricao || !progresso) {
+      Alert.alert('Atenção', 'Preencha todos os campos!');
       return;
     }
 
-    const novaEvolucao = {
-      data: new Date().toISOString().split('T')[0],
+    const dataBackend = formatarDataParaBackend(data);
+
+    const evolucao = {
+      pacienteId,
+      data: dataBackend,
       descricao,
-      progresso: Number(progresso)
+      progresso: parseFloat(progresso),
     };
 
-    fetch(`http://10.0.2.2:8080/evolucao/${pacienteSelecionado.id}`, {
+    console.log('Enviando evolução:', evolucao);
+
+    setLoading(true);
+
+    fetch('http://10.0.2.2:8080/evolucao', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(novaEvolucao)
+      body: JSON.stringify(evolucao),
     })
       .then(res => {
         if (res.ok) {
-          Alert.alert('Sucesso', 'Evolução adicionada!');
-          buscarEvolucao(pacienteSelecionado.id);
-          setDescricao('');
-          setProgresso('');
+          Alert.alert('Sucesso', 'Evolução salva!');
+          navigation.goBack();
         } else {
-          Alert.alert('Erro', 'Não foi possível adicionar a evolução.');
+          res.text().then(text => {
+            console.error('Erro no backend:', text);
+            Alert.alert('Erro', 'Não foi possível salvar a evolução.\n' + text);
+          });
         }
       })
       .catch(err => {
-        console.error('Erro ao adicionar evolução:', err);
-        Alert.alert('Erro', 'Falha ao conectar com o servidor.');
-      });
+        console.error('Erro:', err);
+        Alert.alert('Erro', 'Não foi possível salvar a evolução.');
+      })
+      .finally(() => setLoading(false));
   };
-
-  const progressoData = evolucoes.map(e => e.progresso);
-  const labels = evolucoes.map(e => new Date(e.data).toLocaleDateString('pt-BR'));
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1A335C" />
-        </TouchableOpacity>
-        <Text style={styles.titulo}>Evolução do Paciente</Text>
-        <View style={{ width: 24 }} />
-      </View>
+      <Text style={styles.titulo}>Adicionar Evolução</Text>
 
-      <ScrollView style={styles.card}>
-        <Text style={styles.subtitulo}>Selecionar Paciente</Text>
-        {pacientes.map(p => (
-          <TouchableOpacity
-            key={p.id}
-            style={[
-              styles.pacienteItem,
-              pacienteSelecionado?.id === p.id && { backgroundColor: '#1A335C' }
-            ]}
-            onPress={() => {
-              setPacienteSelecionado(p);
-              buscarEvolucao(p.id);
-            }}
-          >
-            <Text style={{ color: pacienteSelecionado?.id === p.id ? '#fff' : '#000' }}>{p.nome}</Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-
-      {pacienteSelecionado && (
-        <>
-          <View style={styles.card}>
-            <Text style={styles.subtitulo}>Progresso do Tratamento</Text>
-            {loading ? (
-              <ActivityIndicator size="large" color="#1A335C" />
-            ) : progressoData.length > 0 ? (
-              <LineChart
-                data={{
-                  labels: labels,
-                  datasets: [{ data: progressoData }],
-                }}
-                width={Dimensions.get('window').width - 60}
-                height={200}
-                yAxisSuffix="%"
-                chartConfig={{
-                  backgroundGradientFrom: "#fff",
-                  backgroundGradientTo: "#fff",
-                  decimalPlaces: 0,
-                  color: (opacity = 1) => `rgba(26, 51, 92, ${opacity})`,
-                  labelColor: () => '#1A335C',
-                  propsForDots: {
-                    r: '5',
-                    strokeWidth: '2',
-                    stroke: '#1A335C',
-                  },
-                }}
-                bezier
-              />
-            ) : (
-              <Text>Sem dados de progresso.</Text>
-            )}
-          </View>
-
-          <ScrollView style={styles.card}>
-            <Text style={styles.subtitulo}>Histórico de Sessões</Text>
-            {evolucoes.map((e, idx) => (
-              <View key={idx} style={styles.sessao}>
-                <Text style={styles.sessaoData}>{new Date(e.data).toLocaleDateString('pt-BR')}</Text>
-                <Text style={styles.sessaoTexto}>{e.descricao}</Text>
-              </View>
-            ))}
-          </ScrollView>
-
-          <View style={styles.card}>
-            <Text style={styles.subtitulo}>Adicionar Evolução</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Descrição"
-              value={descricao}
-              onChangeText={setDescricao}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Progresso (%)"
-              value={progresso}
-              onChangeText={setProgresso}
-              keyboardType="numeric"
-            />
-            <TouchableOpacity style={styles.botao} onPress={handleAdicionarEvolucao}>
-              <Text style={styles.textoBotao}>Salvar Evolução</Text>
-            </TouchableOpacity>
-          </View>
-        </>
+      <Text style={styles.label}>Paciente</Text>
+      {pacientes.length > 0 ? (
+        <Picker
+          selectedValue={pacienteId}
+          style={styles.input}
+          onValueChange={(itemValue: number) => setPacienteId(itemValue)}
+        >
+          {pacientes.map(p => (
+            <Picker.Item key={p.id} label={p.nome} value={p.id} />
+          ))}
+        </Picker>
+      ) : (
+        <ActivityIndicator size="small" color="#1A335C" />
       )}
+
+      <Text style={styles.label}>Data</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="DD/MM/AAAA"
+        value={data}
+        onChangeText={setData}
+      />
+
+      <Text style={styles.label}>Descrição</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Descrição"
+        value={descricao}
+        onChangeText={setDescricao}
+      />
+
+      <Text style={styles.label}>Progresso (%)</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="0 - 100"
+        keyboardType="numeric"
+        value={progresso}
+        onChangeText={setProgresso}
+      />
+
+      <TouchableOpacity style={styles.botaoSalvar} onPress={handleSalvar} disabled={loading}>
+        <Text style={styles.textoBotao}>{loading ? 'Salvando...' : 'Salvar'}</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.goBack()}>
+        <Text style={styles.textoBotao}>Cancelar</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
-export default EvolucaoPaciente;
+export default EvolucaoPacienteScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#A9A6BA',
-    paddingHorizontal: 20,
-    paddingTop: 40,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
+    backgroundColor: '#f5f5f5',
+    padding: 20,
   },
   titulo: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#1A335C',
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    elevation: 3,
-  },
-  subtitulo: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1A335C',
-    marginBottom: 10,
+    marginBottom: 20,
     textAlign: 'center',
   },
-  sessao: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#CCC',
-    paddingVertical: 10,
-  },
-  sessaoData: {
+  label: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1A335C',
-  },
-  sessaoTexto: {
-    fontSize: 14,
-    color: '#555',
+    marginTop: 10,
   },
   input: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
-    borderColor: '#ccc',
     borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 5,
+    backgroundColor: '#fff',
   },
-  botao: {
+  botaoSalvar: {
     backgroundColor: '#1A335C',
-    padding: 12,
+    padding: 15,
     borderRadius: 10,
     alignItems: 'center',
+    marginTop: 20,
+  },
+  botaoCancelar: {
+    backgroundColor: '#ccc',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
   },
   textoBotao: {
     color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
-  },
-  pacienteItem: {
-    padding: 10,
-    backgroundColor: '#eee',
-    borderRadius: 8,
-    marginBottom: 8,
   },
 });
