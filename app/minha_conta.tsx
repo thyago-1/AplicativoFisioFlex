@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 interface Profissional {
   id: number;
   nome: string;
   email: string;
   cpf: string;
-  crp: string;  // ou crefito, conforme o cadastro
+  crp: string; 
   especialidade: string;
   telefone: string;
 }
 
 const MinhaContaScreen = () => {
   const { token, user, logout } = useAuth();
-  const navigation = useNavigation<any>();
 
   const [profissional, setProfissional] = useState<Profissional | null>(null);
   const [loading, setLoading] = useState(true);
@@ -82,6 +81,10 @@ const MinhaContaScreen = () => {
       <TouchableOpacity style={styles.botaoSair} onPress={handleLogout}>
         <Text style={styles.textoBotao}>Sair</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.botaoVoltar} onPress={() => router.push('/tela_profissional')}>
+        <Text style={styles.textoBotao}>Voltar</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -92,8 +95,25 @@ const styles = StyleSheet.create({
   infoContainer: { marginBottom: 20 },
   label: { fontSize: 16, fontWeight: 'bold', marginBottom: 5 },
   valor: { fontWeight: 'normal', color: '#555' },
-  botaoSair: { backgroundColor: '#cc0000', padding: 15, borderRadius: 10, alignItems: 'center', marginTop: 20 },
-  textoBotao: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
+  botaoSair: {
+    backgroundColor: '#cc0000',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20
+  },
+  botaoVoltar: {
+    backgroundColor: '#1A335C',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10
+  },
+  textoBotao: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold'
+  }
 });
 
 export default MinhaContaScreen;

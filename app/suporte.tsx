@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from "@react-navigation/native"; 
+import { router } from 'expo-router';
 
 const TelaSuporte = () => {
   const [email, setEmail] = useState('');
@@ -41,7 +42,7 @@ const TelaSuporte = () => {
         onChangeText={setMensagem}
       />
 
-<TouchableOpacity style={styles.botaoVoltar} onPress={() => navigation.navigate('ajuda') }  >
+<TouchableOpacity style={styles.botaoVoltar} onPress={() => router.back()}>
             <Text style={styles.botaoVoltarTexto}>Voltar</Text>
           </TouchableOpacity>
        

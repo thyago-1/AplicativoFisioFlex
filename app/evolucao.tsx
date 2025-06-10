@@ -76,6 +76,7 @@ const TelaMinhaEvolucao: React.FC = () => {
         ) : <Text>Sem dados de progresso.</Text>}
       </View>
 
+
       <ScrollView style={styles.card}>
         <Text style={styles.subtitulo}>Histórico de Sessões</Text>
         {evolucoes.map((sessao, index) => (

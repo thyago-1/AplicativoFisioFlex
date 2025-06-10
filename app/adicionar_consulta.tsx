@@ -54,8 +54,8 @@ const TelaAdicionarConsulta = () => {
 
     const novaConsulta = {
       pacienteId,
-      data: data.toISOString().split('T')[0], // "yyyy-MM-dd"
-      hora: hora.toTimeString().split(' ')[0], // "HH:mm:ss"
+      data: data.toISOString().split('T')[0], 
+      hora: hora.toTimeString().split(' ')[0], 
     };
 
     try {

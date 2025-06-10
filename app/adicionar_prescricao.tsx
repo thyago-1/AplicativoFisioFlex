@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
+import { router } from 'expo-router';
+
 
 interface Paciente {
   id: number;
@@ -105,8 +107,8 @@ const AdicionarPrescricaoScreen = () => {
               style={styles.itemPaciente}
               onPress={() => {
                 setPacienteId(item.id);
-                setBuscaPaciente(item.nome);  // Preenche o nome no campo
-                setPacientesFiltrados([]);    // Oculta a lista após seleção
+                setBuscaPaciente(item.nome);  
+                setPacientesFiltrados([]);   
               }}
             >
               <Text>{item.nome} - CPF: {item.cpf}</Text>
@@ -139,7 +141,7 @@ const AdicionarPrescricaoScreen = () => {
         <Text style={styles.textoBotao}>Salvar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.botaoCancelar} onPress={() => router.push('/prescricoes')}>  
         <Text style={styles.textoBotao}>Cancelar</Text>
       </TouchableOpacity>
     </View>

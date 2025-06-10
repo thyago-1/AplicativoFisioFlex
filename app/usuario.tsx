@@ -80,6 +80,7 @@ const TelaUsuario = () => {
   );
 };
 
+
 export default TelaUsuario;
 
 const styles = StyleSheet.create({

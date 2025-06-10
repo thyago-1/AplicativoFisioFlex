@@ -12,8 +12,8 @@ interface Paciente {
 interface Consulta {
   id: number;
   paciente: Paciente;
-  data: string; // "2025-05-03"
-  hora: string; // "14:00"
+  data: string; 
+  hora: string; 
 }
 
 const TelaAgenda = () => {
@@ -108,7 +108,7 @@ const TelaAgenda = () => {
         />
       )}
 
-      <TouchableOpacity onPress={() => router.push('/tela_profissional')} style={styles.botaoVoltar}>
+      <TouchableOpacity onPress={() => router.push('/gerenciar')} style={styles.botaoVoltar}>
         <Text style={styles.textoBotao}>Voltar</Text>
       </TouchableOpacity>
     </View>

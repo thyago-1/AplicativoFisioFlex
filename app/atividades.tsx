@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native
 import { Ionicons } from "@expo/vector-icons";
 import { WebView } from "react-native-webview";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation } from "@react-navigation/native";
+import { router } from 'expo-router';
 
 type RootStackParamList = {
   "Minhas Atividades": undefined;
@@ -37,13 +37,13 @@ const atividades = [
 ];
 
 const TelaMinhasAtividades: React.FC<Props> = ({  }) => {
-    const navigation = useNavigation();
+
 
   return (
     <View style={styles.container}>
  
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('tela_paciente') } >
+        <TouchableOpacity onPress={() => router.push('/tela_paciente') } >
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
         </TouchableOpacity>
         <Text style={styles.titulo}>Minhas Atividades</Text>

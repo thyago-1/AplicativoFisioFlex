@@ -8,13 +8,14 @@ import {
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 const AdicionarCampanha = () => {
   const navigation = useNavigation<any>();
 
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
-  const API_URL = 'http://10.0.2.2:8080/campanhas'; // ajuste se necessário
+  const API_URL = 'http://10.0.2.2:8080/campanhas'; 
 
   const salvarCampanha = async () => {
     if (!titulo || !descricao) {
@@ -70,7 +71,7 @@ const AdicionarCampanha = () => {
 
       <TouchableOpacity
         style={styles.botaoVoltar}
-        onPress={() => navigation.goBack()}
+        onPress={() => router.push('/gerenciar')}
       >
         <Text style={styles.textoBotao}>Voltar</Text>
       </TouchableOpacity>

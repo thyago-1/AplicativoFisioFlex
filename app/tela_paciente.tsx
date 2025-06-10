@@ -48,6 +48,7 @@ const TelaPaciente = () => {
             <Text style={styles.cardTexto}>Meus Pagamentos</Text>
           </TouchableOpacity>
 
+
           <TouchableOpacity onPress={() => router.push('/consultas')} style={styles.card}>
             <Ionicons name="document-text-outline" size={40} color="#1A335C" />
             <Text style={styles.cardTexto}>Consultar Serviços</Text>

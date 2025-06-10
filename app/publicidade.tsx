@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation } from "@react-navigation/native";
+import { router } from 'expo-router';
 
 type RootStackParamList = {
   Publicidade: undefined;
@@ -36,8 +36,7 @@ const publicidades = [
 ];
 
 const TelaPublicidade: React.FC<Props> = ({  }) => {
-  
-    const navigation = useNavigation();
+ 
 
   return (
     <View style={styles.container}>
@@ -45,7 +44,7 @@ const TelaPublicidade: React.FC<Props> = ({  }) => {
       <View style={styles.header}>
         <TouchableOpacity 
         
-        onPress={() => navigation.navigate('tela_paciente') } >
+        onPress={() => router.push('/tela_paciente') } >
 
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
         </TouchableOpacity>

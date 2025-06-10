@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 interface Paciente {
   id: number;
@@ -47,7 +48,7 @@ const TelaPrescricoes = () => {
       {
         text: 'Remover',
         onPress: () => {
-          // Opcional: integrar com DELETE /prescricoes/{id}
+          
           setPrescricoes(prescricoes.filter(p => p.id !== id));
           fecharModal();
         },
@@ -70,11 +71,13 @@ const TelaPrescricoes = () => {
         )}
       />
 
-      <TouchableOpacity onPress={() => navigation.navigate('adicionar_prescricao')} style={styles.botaoAdicionar}>
+      <TouchableOpacity onPress={() => router.push('/adicionar_prescricao')}
+       style={styles.botaoAdicionar}>
         <Text style={styles.textoBotao}>Adicionar Prescrição</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('tela_profissional')} style={styles.botaoVoltar}>
+      <TouchableOpacity onPress={() => router.push('/tela_profissional')} 
+      style={styles.botaoVoltar}>
         <Text style={styles.textoBotaoVoltar}>Voltar</Text>
       </TouchableOpacity>
 

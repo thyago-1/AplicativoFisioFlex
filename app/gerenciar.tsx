@@ -1,37 +1,39 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
+
 
 const TelaGerenciar = () => {
-  const navigation = useNavigation();
+
 
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.titulo}>Gerenciar</Text>
 
       <View style={styles.cardContainer}>
-        <TouchableOpacity onPress={() => navigation.navigate('agenda') }
+        <TouchableOpacity onPress={() => router.push('/agenda') }
         style={styles.card}>
           <Ionicons name="calendar-outline" size={40} color="#1A335C" />
           <Text style={styles.cardText}>Gerenciar Agenda</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigation.navigate('gerenciar_campanhas') } 
+        <TouchableOpacity onPress={() => router.push('/gerenciar_campanhas') } 
         style={styles.card}>
           <Ionicons name="megaphone-outline" size={40} color="#1A335C" />
           <Text style={styles.cardText}>Campanhas</Text>
         </TouchableOpacity>
       </View>
 
-      <View style={styles.cardContainer}>
+      {/*<View style={styles.cardContainer}>
         <TouchableOpacity style={styles.card}>
           <Ionicons name="pricetag-outline" size={40} color="#1A335C" />
           <Text style={styles.cardText}>Publicidade</Text>
         </TouchableOpacity>
-      </View>
+      </View>*/}
 
-      <TouchableOpacity onPress={() => navigation.navigate('tela_profissional') } 
+      <TouchableOpacity onPress={() => router.push('/tela_profissional') } 
         style={styles.botaoVoltar}
      >
         <Text style={styles.textoBotaoVoltar}>Voltar</Text>

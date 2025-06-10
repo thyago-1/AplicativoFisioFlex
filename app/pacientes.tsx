@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
+import { router } from 'expo-router';
 
 interface Paciente {
   id: number;
@@ -90,11 +91,11 @@ const MeusPacientesScreen = () => {
         />
       )}
 
-      <TouchableOpacity style={styles.botaoAdd} onPress={() => navigation.navigate('adicionar_paciente')}>
+      <TouchableOpacity style={styles.botaoAdd} onPress={() => router.push('/adicionar_paciente')}> 
         <Text style={styles.textoBotaoAdd}>Adicionar Paciente</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.botaoVoltar} onPress={() => navigation.navigate('tela_profissional')}>
+      <TouchableOpacity style={styles.botaoVoltar}onPress={() => router.push('/tela_profissional')}> 
         <Text style={styles.textoBotao}>Voltar</Text>
       </TouchableOpacity>
     </View>

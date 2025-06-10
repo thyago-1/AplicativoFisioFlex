@@ -30,7 +30,7 @@ const TelaEditarConsulta = () => {
 
     const consultaEditada = {
       id: consulta.id,
-      pacienteId: consulta.paciente.id,  // Mantemos o mesmo paciente
+      pacienteId: consulta.paciente.id, 
       data: data.toISOString().split('T')[0],
       hora: hora.toTimeString().substring(0, 5),
     };
@@ -44,6 +44,7 @@ const TelaEditarConsulta = () => {
         },
         body: JSON.stringify(consultaEditada),
       });
+
 
       if (response.ok) {
         Alert.alert('Sucesso', 'Consulta atualizada com sucesso!');

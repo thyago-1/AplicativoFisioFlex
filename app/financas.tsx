@@ -9,6 +9,8 @@ import {
   Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
+
 
 interface ResumoFinanceiro {
   receitaMensal: number;
@@ -29,7 +31,7 @@ const TelaFinancas = () => {
   const [boletosPagar, setBoletosPagar] = useState<Boleto[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE = 'http://10.0.2.2:8080/financas'; // ajuste para seu IP se usar dispositivo físico
+  const API_BASE = 'http://10.0.2.2:8080/financas'; 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,7 +112,7 @@ const TelaFinancas = () => {
       />
 
       <TouchableOpacity
-        onPress={() => navigation.navigate('tela_profissional')}
+        onPress={() => router.push('/tela_profissional')}
         style={styles.botaoVoltar}
       >
         <Text style={styles.textoBotao}>Voltar</Text>

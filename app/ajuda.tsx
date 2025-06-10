@@ -1,9 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 
 const AjudaScreen = () => {
-  const navigation = useNavigation();
+  
 
   return (
     <View style={styles.container}>
@@ -19,11 +19,11 @@ const AjudaScreen = () => {
         <Text style={styles.resposta}>Acesse a tela de Dados do Usuário e toque na imagem de perfil para alterar.</Text>
       </ScrollView>
       
-      <TouchableOpacity onPress={() => navigation.navigate('suporte') } style={styles.botaoSuporte}>
+      <TouchableOpacity onPress={() => router.push('/suporte') } style={styles.botaoSuporte}>
         <Text style={styles.botaoTexto}>Entrar em Contato com o Suporte</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity style={styles.botaoVoltar} onPress={() => navigation.navigate('inicio') }  >
+      <TouchableOpacity style={styles.botaoVoltar} onPress={() => router.push('/') }  >
         <Text style={styles.botaoTexto}>Voltar</Text>
       </TouchableOpacity>
     </View>

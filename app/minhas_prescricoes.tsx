@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Modal, StyleSheet, ActivityIndicator, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 
 interface PacienteDTO {
@@ -16,8 +16,9 @@ interface Prescricao {
   exercicios: string;
 }
 
+
 const MinhasPrescricoesScreen = () => {
-  const navigation = useNavigation<any>();
+
   const { token, user } = useAuth();
 
   const [prescricoes, setPrescricoes] = useState<Prescricao[]>([]);
@@ -80,7 +81,7 @@ const MinhasPrescricoesScreen = () => {
         />
       )}
 
-      <TouchableOpacity onPress={() => navigation.navigate('tela_paciente')} style={styles.botaoVoltar}>
+      <TouchableOpacity onPress={() => router.push('/tela_paciente')} style={styles.botaoVoltar}>
         <Text style={styles.textoBotaoVoltar}>Voltar</Text>
       </TouchableOpacity>
 

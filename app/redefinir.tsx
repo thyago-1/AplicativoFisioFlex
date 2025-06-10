@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from "@react-navigation/native"; 
+import { router } from 'expo-router';
 
 const TelaRedefinirSenha = ({  }) => {
   
@@ -28,7 +29,7 @@ const TelaRedefinirSenha = ({  }) => {
       <TouchableOpacity style={styles.botao} onPress={handleRecuperarSenha}>
         <Text style={styles.textoBotao}>Recuperar Senha</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('inicio') }>
+      <TouchableOpacity onPress={() => router.push('/login')}>
         <Text style={styles.voltar}>Voltar</Text>
       </TouchableOpacity>
     </View>

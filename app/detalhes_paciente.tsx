@@ -1,11 +1,11 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-
+import { useRoute } from '@react-navigation/native';
+import { router } from 'expo-router';
 const TelaDetalhesPaciente = () => {
   const route = useRoute();
   const { paciente } = route.params; 
-  const navigation = useNavigation();
+ 
 
   return (
     <View style={styles.container}>
@@ -24,7 +24,7 @@ const TelaDetalhesPaciente = () => {
  
       <TouchableOpacity
   style={styles.botaoEditar}
-  onPress={() => navigation.navigate('editar_paciente', { paciente })}
+  onPress={() => router.push('/editar_paciente', { paciente })}
 >
   <Text style={styles.textoBotao}>Editar</Text>
 </TouchableOpacity>
@@ -32,7 +32,7 @@ const TelaDetalhesPaciente = () => {
    
       <TouchableOpacity 
         style={styles.botaoVoltar} 
-        onPress={() => navigation.navigate('pacientes')}
+        onPress={() => router.push('/pacientes')}
       >
         <Text style={styles.textoBotao}>Voltar</Text>
       </TouchableOpacity>

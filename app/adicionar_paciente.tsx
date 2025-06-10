@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } fro
 import { useNavigation } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../contexts/AuthContext';
+import { router } from 'expo-router';
 
 const TelaAdicionarPaciente = () => {
   const navigation = useNavigation<any>();
@@ -78,6 +79,7 @@ const TelaAdicionarPaciente = () => {
 };
 
 
+
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Adicionar Paciente</Text>
@@ -102,7 +104,7 @@ const TelaAdicionarPaciente = () => {
       </TouchableOpacity>
 
      
-      <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.navigate('pacientes')}>
+      <TouchableOpacity style={styles.botaoCancelar}  onPress={() => router.push('/tela_profissional')}>
         <Text style={styles.textoBotao}>Cancelar</Text>
       </TouchableOpacity>
     </View>

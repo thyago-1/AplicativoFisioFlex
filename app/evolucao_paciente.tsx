@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from '@react-native-picker/picker';
+import { router } from 'expo-router';
 
 interface Paciente {
   id: number;
@@ -41,7 +42,7 @@ const EvolucaoPacienteScreen = () => {
 
   const formatarDataParaBackend = (dataBr: string) => {
     const [dia, mes, ano] = dataBr.split('/');
-    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD
+    return `${ano}-${mes}-${dia}`; 
   };
 
   const handleSalvar = () => {
@@ -134,7 +135,7 @@ const EvolucaoPacienteScreen = () => {
         <Text style={styles.textoBotao}>{loading ? 'Salvando...' : 'Salvar'}</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.botaoCancelar} onPress={() => navigation.goBack()}>
+      <TouchableOpacity style={styles.botaoCancelar} onPress={() => router.push('/tela_profissional')}>
         <Text style={styles.textoBotao}>Cancelar</Text>
       </TouchableOpacity>
     </View>

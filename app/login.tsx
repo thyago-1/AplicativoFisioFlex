@@ -42,7 +42,7 @@ const TelaLogin = () => {
         const data = JSON.parse(responseText);
         console.log('Parsed Response:', data);
 
-        // ✅ Verifica se data.usuario e data.paciente existem:
+      
         if (!data.usuario || !data.paciente) {
           console.warn('⚠️ Resposta incompleta: falta usuario ou paciente');
         }

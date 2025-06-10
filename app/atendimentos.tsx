@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList, ActivityIndicator, Alert, SafeAreaView, RefreshControl } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+
 import { useAuth } from "@/contexts/AuthContext";
+import { router } from 'expo-router';
 
 interface Atendimento {
   id: string;
@@ -11,13 +12,13 @@ interface Atendimento {
 }
 
 const MeusAtendimentosScreen: React.FC = () => {
-  const navigation = useNavigation<any>();
+
   const { user, token } = useAuth();
   const [atendimentos, setAtendimentos] = useState<Atendimento[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const idPaciente = user?.id; // ✅ Agora puxa dinamicamente do AuthContext
+  const idPaciente = user?.id; 
 
   const API_URL = `http://10.0.2.2:8080/atendimentos/${idPaciente}`;
 
@@ -74,7 +75,7 @@ const MeusAtendimentosScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("tela_paciente")}>
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
         </TouchableOpacity>
         <Text style={styles.titulo}>Meus Atendimentos</Text>

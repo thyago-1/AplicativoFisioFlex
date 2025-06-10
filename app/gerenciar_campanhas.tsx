@@ -9,7 +9,9 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+
+import { router } from 'expo-router';
+
 
 interface Campanha {
   id: number;
@@ -18,14 +20,14 @@ interface Campanha {
 }
 
 const GerenciarCampanhas = () => {
-  const navigation = useNavigation<any>();
+
 
   const [titulo, setTitulo] = useState('');
   const [descricao, setDescricao] = useState('');
   const [campanhas, setCampanhas] = useState<Campanha[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const API_URL = 'http://10.0.2.2:8080/campanhas'; // Ajuste para IP local conforme necessário
+  const API_URL = 'http://10.0.2.2:8080/campanhas'; 
 
   useEffect(() => {
     carregarCampanhas();
@@ -120,7 +122,7 @@ const GerenciarCampanhas = () => {
       )}
 
       <TouchableOpacity
-        onPress={() => navigation.navigate('gerenciar')}
+        onPress={() => router.push('/gerenciar')}
         style={styles.botaoVoltar}
       >
         <Text style={styles.textoBotaoVoltar}>Voltar</Text>

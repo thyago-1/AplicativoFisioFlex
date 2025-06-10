@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { useNavigation } from "@react-navigation/native";
+import { router } from 'expo-router';
 
 type RootStackParamList = {
   "Consultar Serviços": undefined;
@@ -23,7 +23,7 @@ const servicos = [
 
 const TelaConsultarServicos: React.FC<Props> = ({  }) => {
  
- const navigation = useNavigation();
+
 
   return (
     <View style={styles.container}>
@@ -31,7 +31,7 @@ const TelaConsultarServicos: React.FC<Props> = ({  }) => {
       <View style={styles.header}>
         <TouchableOpacity 
        
-       onPress={() => navigation.navigate('tela_paciente') } >
+       onPress={() => router.push('/tela_paciente') } >
 
           <Ionicons name="arrow-back" size={24} color="#1A335C" />
         </TouchableOpacity>
@@ -49,7 +49,7 @@ const TelaConsultarServicos: React.FC<Props> = ({  }) => {
             <Text style={styles.descricao}>{item.descricao}</Text>
             <Text style={styles.preco}>{item.preco}</Text>
             <TouchableOpacity style={styles.botao}>
-              <Text style={styles.botaoTexto}>Agendar</Text>
+              <Text style={styles.botaoTexto}>Saiba mais</Text>
             </TouchableOpacity>
           </View>
         )}

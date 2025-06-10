@@ -16,6 +16,7 @@ const TelaProfissional = () => {
     navigation.navigate(screen, { profissional });
   };
 
+  
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Área do Profissional</Text>

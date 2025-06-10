@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { router } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 
 const TelaLoginProfissional = () => {
-  const navigation = useNavigation<any>();
   const { login } = useAuth();
 
   const [registro, setRegistro] = useState('');
@@ -54,8 +53,7 @@ const TelaLoginProfissional = () => {
         await login(token, user, undefined, profissional);
 
         Alert.alert('Sucesso', `Bem-vindo, ${user.nome}!`);
-        navigation.navigate('tela_profissional');
-
+        router.replace('/tela_profissional'); // Substitui a tela atual
       } else {
         Alert.alert('Erro', `Status: ${response.status}\n${responseText}`);
       }
@@ -96,7 +94,7 @@ const TelaLoginProfissional = () => {
         )}
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.botaoVoltar} onPress={() => navigation.navigate('inicio')}>
+      <TouchableOpacity style={styles.botaoVoltar} onPress={() => router.push('/')}>
         <Text style={styles.botaoVoltarTexto}>Voltar</Text>
       </TouchableOpacity>
     </View>

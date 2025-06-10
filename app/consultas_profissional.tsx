@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert, SafeAreaView, RefreshControl, ActivityIndicator } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { useAuth } from '@/contexts/AuthContext';
+import { router } from 'expo-router';
 
 interface Paciente {
   id: number;
@@ -86,6 +87,7 @@ const TelaConsultas = () => {
               throw new Error('Erro ao cancelar a consulta');
             }
 
+            
             setConsultas(consultas.filter(consulta => consulta.id !== id));
             Alert.alert('Consulta cancelada!');
           } catch (error) {
@@ -143,7 +145,7 @@ const TelaConsultas = () => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => navigation.navigate('tela_profissional')}
+        onPress={() => router.push('/tela_profissional')}
         style={styles.botaoVoltar}
       >
         <Text style={styles.textoBotaoVoltar}>Voltar</Text>

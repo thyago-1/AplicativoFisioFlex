@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-
+import { router } from 'expo-router';
 
 type RootStackParamList = {
   editar_paciente: {
@@ -76,7 +76,7 @@ const TelaEditarPaciente = () => {
         <Text style={styles.textoBotao}>Salvar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.botaoVoltar} onPress={() => navigation.navigate('pacientes') }>
+      <TouchableOpacity style={styles.botaoVoltar} onPress={() => router.push('/tela_profissonal')}>
         <Text style={styles.textoBotao}>Cancelar</Text>
       </TouchableOpacity>
     </View>
