@@ -47,11 +47,18 @@ const MinhaContaScreen = () => {
   }, [token, user]);
 
   const handleLogout = () => {
-    Alert.alert('Sair', 'Deseja realmente sair?', [
-      { text: 'Cancelar', style: 'cancel' },
-      { text: 'Sair', onPress: logout }
-    ]);
-  };
+  Alert.alert('Sair', 'Deseja realmente sair?', [
+    { text: 'Cancelar', style: 'cancel' },
+    {
+      text: 'Sair',
+      onPress: () => {
+        logout(); // limpa o contexto
+        router.replace('/'); // redireciona para a tela inicial
+      }
+    }
+  ]);
+};
+
 
   if (loading) {
     return (

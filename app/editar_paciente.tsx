@@ -1,46 +1,31 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import { router } from 'expo-router';
-
-type RootStackParamList = {
-  editar_paciente: {
-    paciente: {
-      nome: string;
-      cpf: string;
-      idade?: string;
-      peso?: string;
-      altura?: string;
-      sexo?: string;
-      endereco?: string;
-      telefone?: string;
-      email?: string;
-    };
-  };
-};
-
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
+import { useLocalSearchParams, router } from 'expo-router';
 
 const TelaEditarPaciente = () => {
-  const navigation = useNavigation();
-  const route = useRoute<RouteProp<RootStackParamList, 'editar_paciente'>>();
+  const params = useLocalSearchParams();
 
- 
-  const pacienteExistente = route.params?.paciente || {};
+  const id = Number(params.id);
+  const [nome, setNome] = useState(params.nome?.toString() || '');
+  const [cpf, setCpf] = useState(params.cpf?.toString() || '');
+  const [idade, setIdade] = useState(params.idade?.toString() || '');
+  const [peso, setPeso] = useState(params.peso?.toString() || '');
+  const [altura, setAltura] = useState(params.altura?.toString() || '');
+  const [sexo, setSexo] = useState(params.sexo?.toString() || '');
+  const [endereco, setEndereco] = useState(params.endereco?.toString() || '');
+  const [telefone, setTelefone] = useState(params.telefone?.toString() || '');
+  const [email, setEmail] = useState(params.email?.toString() || '');
 
-
-  const [nome, setNome] = useState(pacienteExistente.nome || '');
-  const [cpf, setCpf] = useState(pacienteExistente.cpf || '');
-  const [idade, setIdade] = useState(pacienteExistente.idade || '');
-  const [peso, setPeso] = useState(pacienteExistente.peso || '');
-  const [altura, setAltura] = useState(pacienteExistente.altura || '');
-  const [sexo, setSexo] = useState(pacienteExistente.sexo || '');
-  const [endereco, setEndereco] = useState(pacienteExistente.endereco || '');
-  const [telefone, setTelefone] = useState(pacienteExistente.telefone || '');
-  const [email, setEmail] = useState(pacienteExistente.email || '');
-
-  
-  const salvarEdicao = () => {
+  const salvarEdicao = async () => {
     const pacienteAtualizado = {
+      id,
       nome,
       cpf,
       idade,
@@ -52,10 +37,23 @@ const TelaEditarPaciente = () => {
       email,
     };
 
-    console.log('Paciente Atualizado:', pacienteAtualizado);
+    try {
+      const response = await fetch(`http://10.0.2.2:8080/pacientes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pacienteAtualizado),
+      });
 
-    
-    navigation.navigate('detalhes_paciente', { paciente: pacienteAtualizado });
+      if (response.ok) {
+        Alert.alert('Sucesso', 'Paciente atualizado com sucesso!');
+        router.push('/pacientes');
+      } else {
+        Alert.alert('Erro', 'Falha ao atualizar paciente.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Erro', 'Erro de conexão com o servidor.');
+    }
   };
 
   return (
@@ -64,9 +62,9 @@ const TelaEditarPaciente = () => {
 
       <TextInput style={styles.input} placeholder="Nome" value={nome} onChangeText={setNome} />
       <TextInput style={styles.input} placeholder="CPF" value={cpf} onChangeText={setCpf} />
-      <TextInput style={styles.input} placeholder="Idade" value={idade} onChangeText={setIdade} />
-      <TextInput style={styles.input} placeholder="Peso" value={peso} onChangeText={setPeso} />
-      <TextInput style={styles.input} placeholder="Altura" value={altura} onChangeText={setAltura} />
+      <TextInput style={styles.input} placeholder="Idade" value={idade} onChangeText={setIdade} keyboardType="numeric" />
+      <TextInput style={styles.input} placeholder="Peso" value={peso} onChangeText={setPeso} keyboardType="numeric" />
+      <TextInput style={styles.input} placeholder="Altura" value={altura} onChangeText={setAltura} keyboardType="numeric" />
       <TextInput style={styles.input} placeholder="Sexo" value={sexo} onChangeText={setSexo} />
       <TextInput style={styles.input} placeholder="Endereço" value={endereco} onChangeText={setEndereco} />
       <TextInput style={styles.input} placeholder="Telefone" value={telefone} onChangeText={setTelefone} />
@@ -76,7 +74,7 @@ const TelaEditarPaciente = () => {
         <Text style={styles.textoBotao}>Salvar</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.botaoVoltar} onPress={() => router.push('/tela_profissonal')}>
+      <TouchableOpacity style={styles.botaoVoltar} onPress={() => router.push('/pacientes')}>
         <Text style={styles.textoBotao}>Cancelar</Text>
       </TouchableOpacity>
     </View>

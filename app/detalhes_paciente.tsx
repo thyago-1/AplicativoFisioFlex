@@ -1,16 +1,38 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { RouteProp, useRoute } from '@react-navigation/native';
 import { router } from 'expo-router';
+
+type Paciente = {
+  id: number;
+  nome: string;
+  cpf: string;
+  idade?: string;
+  peso?: string;
+  altura?: string;
+  sexo?: string;
+  endereco?: string;
+  telefone?: string;
+  email?: string;
+};
+
+type RouteParams = {
+  detalhes_paciente: {
+    paciente: Paciente;
+  };
+};
+
 const TelaDetalhesPaciente = () => {
-  const route = useRoute();
-  const { paciente } = route.params; 
- 
+  const route = useRoute<RouteProp<RouteParams, 'detalhes_paciente'>>();
+  const { paciente } = route.params;
 
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>Detalhes do Paciente</Text>
-      <Image source={paciente.imagem} style={styles.avatar} />
+
+      {/* Imagem padrão */}
+      <Image source={require('../assets/img/icone.png')} style={styles.avatar} />
+
       <Text style={styles.info}><Text style={styles.label}>Nome:</Text> {paciente.nome}</Text>
       <Text style={styles.info}><Text style={styles.label}>CPF:</Text> {paciente.cpf}</Text>
       <Text style={styles.info}><Text style={styles.label}>Idade:</Text> {paciente.idade || 'Não informado'}</Text>
@@ -21,17 +43,34 @@ const TelaDetalhesPaciente = () => {
       <Text style={styles.info}><Text style={styles.label}>Telefone:</Text> {paciente.telefone || 'Não informado'}</Text>
       <Text style={styles.info}><Text style={styles.label}>E-mail:</Text> {paciente.email || 'Não informado'}</Text>
 
- 
+      {/* Botão Editar */}
       <TouchableOpacity
-  style={styles.botaoEditar}
-  onPress={() => router.push('/editar_paciente', { paciente })}
->
-  <Text style={styles.textoBotao}>Editar</Text>
-</TouchableOpacity>
+        style={styles.botaoEditar}
+        onPress={() =>
+          router.push({
+  pathname: '/editar_paciente',
+  params: {
+    id: String(paciente.id),
+    nome: paciente.nome,
+    cpf: paciente.cpf,
+    idade: String(paciente.idade ?? ''),
+    peso: String(paciente.peso ?? ''),
+    altura: String(paciente.altura ?? ''),
+    sexo: paciente.sexo ?? '',
+    endereco: paciente.endereco ?? '',
+    telefone: paciente.telefone ?? '',
+    email: paciente.email ?? ''
+  }
+})
 
-   
-      <TouchableOpacity 
-        style={styles.botaoVoltar} 
+        }
+      >
+        <Text style={styles.textoBotao}>Editar</Text>
+      </TouchableOpacity>
+
+      {/* Botão Voltar */}
+      <TouchableOpacity
+        style={styles.botaoVoltar}
         onPress={() => router.push('/pacientes')}
       >
         <Text style={styles.textoBotao}>Voltar</Text>
